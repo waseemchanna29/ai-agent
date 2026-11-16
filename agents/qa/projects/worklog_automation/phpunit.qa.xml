@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  QA test-suite configuration for worklog_automation.
+  Bootstraps the application's own autoloader (so App\* and Tests\TestCase resolve)
+  but runs ONLY the QA tests that live in this folder. The app code is NOT copied.
+  Run from the QA project folder:
+    php C:/xampp/htdocs/worklog_automation/vendor/phpunit/phpunit/phpunit -c phpunit.qa.xml
+-->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="C:/xampp/htdocs/worklog_automation/vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="C:/xampp/htdocs/worklog_automation/vendor/autoload.php"
+         colors="true"
+>
+    <testsuites>
+        <testsuite name="QA">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+    <php>
+        <env name="APP_BASE_PATH" value="C:/xampp/htdocs/worklog_automation"/>
+        <env name="APP_ENV" value="testing"/>
+        <env name="APP_KEY" value="base64:2fl+Ktg6Jw3ke0h0m3yC0r2E2p0h2v9kQ8t1yq1sJ0Q="/>
+        <env name="APP_MAINTENANCE_DRIVER" value="file"/>
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="BROADCAST_CONNECTION" value="null"/>
+        <env name="CACHE_STORE" value="array"/>
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>
+        <env name="DB_URL" value=""/>
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="N8N_WEBHOOK_URL" value="https://n8n.test/webhook/worklog"/>
+        <env name="N8N_WEBHOOK_SECRET" value="test-secret"/>
+        <env name="PULSE_ENABLED" value="false"/>
+        <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="NIGHTWATCH_ENABLED" value="false"/>
+    </php>
+</phpunit>

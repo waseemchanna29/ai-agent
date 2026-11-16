@@ -1,0 +1,23 @@
+[
+  {
+    "id": "BUG-1",
+    "title": "Unauthenticated submission identity (IDOR) on POST /worklogs and /tasks",
+    "severity": "high",
+    "file": "app/Http/Controllers/WorklogController.php:36",
+    "details": "POST /worklogs and POST /tasks accept any existing user_id from the request body (validation only checks exists:users,id) with no authentication and no check that the caller owns the UUID that loaded the form. Steps: POST /worklogs with another user's user_id -> 201, worklog rows are created for that victim user; same for POST /tasks (TaskController.php:15, StoreWorklogRequest.php:18). User ids are sequential, so any user can be targeted. Expected: submission bound to the UUID owner. Actual: logs/tasks created on behalf of any user. Confirmed by test_store_accepts_arbitrary_user_id_idor."
+  },
+  {
+    "id": "BUG-2",
+    "title": "GET /worklog/{uuid} has no rate limit and the UUID never expires/rotates",
+    "severity": "medium",
+    "file": "routes/web.php:12",
+    "details": "The form-loading route is outside any throttle group (only the POSTs are rate-limited). The UUID is the only access control and never expires or rotates. Steps: hit /worklog/{uuid} unlimited times; a leaked link grants permanent access. Expected: throttle + rotatable/expiring UUID. Actual: unlimited requests, permanent access from a leaked link. Combined with BUG-1 this is the entire employee-side trust model."
+  },
+  {
+    "id": "BUG-3",
+    "title": "Failing test in shipped suite: GET / returns 404 (no root route)",
+    "severity": "low",
+    "file": "tests/Feature/ExampleTest.php:17",
+    "details": "php artisan test fails: Tests\\Feature\\ExampleTest asserts GET / == 200 but there is no root route, so the response is 404. It is the default Laravel scaffold test; welcome.blade.php is also unwired. Expected: green suite. Actual: 1 failing test. Fix: remove the scaffold ExampleTest (and unused welcome view) or add a root route. A red suite hides future regressions."
+  }
+]

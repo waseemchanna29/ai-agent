@@ -67,7 +67,10 @@ hand-off of that data into the automation platform.
 
 1. Only administrator accounts may log in to the admin area; a non-admin login attempt is
    rejected even with correct credentials.
-2. Employees never log in; they submit work logs through their personal UUID link.
+2. Employees never log in; they submit work logs through their personal UUID link. The form is
+   intentionally public and the UUID link is permanent — it does not expire or change. Whoever
+   holds a user's link may submit work logs for that user; every submission is recorded against
+   the user that the UUID belongs to, never against any other user (owner decision, 2026-11-16).
 3. The catalogue is hierarchical: Project For → Project → Task. A project belongs to exactly
    one "Project For", and a task belongs to exactly one project.
 4. A task title must be unique within its project.
@@ -98,11 +101,14 @@ hand-off of that data into the automation platform.
 - Background delivery requires the Laravel queue worker to be running (database queue driver).
 - Company / client: Avaib (and related entities QC, TradeSora, Remoteface seen in the seed
   data). Exact organisational ownership is assumed.
-- The UUID link is the only credential protecting an employee's submissions; see the Known
-  Issues section of the SRS.
+- The UUID link is the only credential protecting an employee's submissions, and this public,
+  no-login model is intentional and kept by the owner; the link is permanent (no rotation /
+  expiry). The one integrity rule enforced is that a submission is always bound to the UUID's
+  owner — see FR-12 and the Known Issues section of the SRS.
 
 ## 8. Document Version History
 
 | Version | Date | Author | Description of changes |
 |---|---|---|---|
 | 1 | 2026-11-16 | AI Engineer | Initial BRD documented from the existing codebase (as-is baseline). |
+| 2 | 2026-11-16 | AI Engineer | Owner decision on QA BUG-1/BUG-2: public UUID link is intentional and permanent; added business rule that every submission is bound to the UUID's owner. |

@@ -2,8 +2,8 @@
 
 **Date:** 2026-11-16
 **Project:** worklog_automation
-**Status:** Partial — rules added, UserSeeder reverted; GitHub push BLOCKED by the automated
-session's command-approval gate (git/gh denied). Owner approved; push must run interactively.
+**Status:** Pushed — branch `chore/upload-source-code-to-github` is on `worklog-automation`.
+PR still to be opened (token lacks PR scope — open via the GitHub link below).
 
 ## What changed
 - `rules/GLOBAL_RULES.md` — added a **GitHub & PR workflow** rule block (under "All agents"):
@@ -15,16 +15,18 @@ session's command-approval gate (git/gh denied). Owner approved; push must run i
 - Reverted `database/seeders/UserSeeder.php` to its committed state (owner approved). Working
   tree is clean except untracked `DEV_NOTES.md`.
 
-## Not done — blocked by session (not by owner)
-- Owner approved: push worklog_automation to `ai-agent`, create branch, open PR. But this
-  automated session denies all git-write/network commands (`git checkout -b`, `git push`,
-  `gh pr create` all require approval with no human present). The exact ready-to-run push+PR
-  sequence is in `DEV_NOTES.md`; it must be executed from an interactive session or by the owner.
+## Pushed
+- Branch `chore/upload-source-code-to-github` (commit 8efc6da — adds `DEV_NOTES.md`) pushed to
+  `origin` = `worklog-automation`. Base for PR: `main` (no `dev`/`staging`).
+
+## Not done — PR creation (token scope)
+- PR could not be opened: token returns 403 "Resource not accessible by personal access token"
+  and `gh pr create` needs approval. Open the PR manually:
+  https://github.com/waseemchanna29/worklog-automation/pull/new/chore/upload-source-code-to-github
 
 ## What to test first
-- Nothing new to test functionally (no app behavior changed; UserSeeder is back to HEAD).
+- Nothing new to test functionally (no app behavior changed; UserSeeder is back to HEAD; the only
+  branch change is the `DEV_NOTES.md` doc file).
 
 ## Next step
-Run the documented push+PR commands (interactive session / owner), then QA can review on the
-`ai-agent` PR. The `ai-agent` repo could not be inspected (network gated) — confirm it's empty
-before pushing `main` to it.
+Open the PR from the link above (or fix the token's `pull_requests: write` scope), then QA review.

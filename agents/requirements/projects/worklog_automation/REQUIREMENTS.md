@@ -1,5 +1,5 @@
 # Requirements — worklog_automation
-Version: 1 · Date: 2026-11-16 · Status: as-is baseline
+Version: 3 · Date: 2026-11-16 · Status: as-is baseline
 
 ## 1. Overview & Glossary
 
@@ -42,6 +42,27 @@ designation so I can log my work without a password.
 - Acceptance: a valid `uuid` resolves to its user and renders the form; an unknown `uuid`
   returns HTTP 404. The full Project For → Project → Task tree is loaded for the cascading
   dropdowns. If the resolved user is an admin, a link to Login/Dashboard is shown.
+- Rate limiting (changed in v3 — see FR-13): the route is throttled so that neither valid nor
+  unknown UUIDs can be requested without limit. The UUID itself is **not** changed — the public
+  per-employee URL is permanent (owner decision, see §9 item 2); throttling only limits how fast
+  the route can be probed.
+
+### FR-13 Throttle the public work-log form route `[new]`
+As the business, I want the public form route `GET /worklog/{uuid}` to be rate-limited so that
+the unguessably-long UUID cannot be brute-force enumerated by hitting the route at high volume,
+without changing the permanent public URL itself.
+- **Context (owner, 2026-11-16):** the UUID link is confirmed to be a **public URL for each
+  employee** and is permanent — it is not rotated or expired (see §9 item 2 and FR-12). The owner
+  declined QA BUG-2's rotation/expiry recommendation. This FR covers the *other* half of BUG-2 —
+  the missing rate limit — which does not change the URL.
+- Acceptance: `GET /worklog/{uuid}` is placed behind a `throttle` middleware (suggested 30
+  requests/min, matching the existing POST limits), keyed per client (IP). Exceeding the limit
+  returns HTTP 429. A legitimate employee opening and refilling their form is unaffected at this
+  limit. The throttle applies equally to valid and 404 responses so it cannot be used to confirm
+  which UUIDs exist faster than the limit allows.
+- This is a hardening requirement, not a design change: no login, no UUID rotation, no change to
+  the URL format. If the owner prefers to leave the GET route unthrottled, this FR is withdrawn
+  (owner may veto on the BUG-2 card).
 
 ### FR-2 Cascading selection of Project For → Project → Task `[existing]`
 As a user, when I pick a "Project For" the Project dropdown shows only its projects, and when I
@@ -49,24 +70,33 @@ pick a Project the Task dropdown shows only its tasks.
 - Acceptance: Project is disabled until a Project For is chosen; Task is disabled until a
   Project is chosen; changing a parent resets the child selections.
 
-### FR-3 Submit one or more work-log entries `[existing]`
+### FR-3 Submit one or more work-log entries `[existing]` `[changed in v2]`
 As a user, I choose a date and project context, add one or more entries (task, hours, optional
-details) and submit them together.
-- Acceptance (`POST /worklogs`, `StoreWorklogRequest`): `user_id`, `work_date`
+details) and submit them together; the entries are always recorded against the user who owns the
+UUID link I opened, not against any identity I supply.
+- Acceptance (`POST /worklogs`, `StoreWorklogRequest`): `work_date`
   (date, not in the future), `project_for_id`, `project_id` (must belong to the chosen
   `project_for_id`) are required; `worklog_entries` is a non-empty array; each entry requires a
   `task_id` that belongs to the chosen project and `hours_spent` numeric between 0.25 and 24;
   `details` is optional, max 5000 characters. All entries are saved in a single DB transaction.
   Response is JSON `{message, count}` with HTTP 201. The endpoint is rate-limited to 30
   requests per minute.
+- Submission identity (changed in v2 — see FR-12): the acting user is the owner of the UUID that
+  loaded the form. The request must carry that UUID (or the UUID-scoped route); the server
+  resolves `user_id` from it and **ignores any client-supplied `user_id`**. A request that
+  attempts to log on behalf of a user other than the UUID owner is rejected (HTTP 403) or has the
+  mismatched value ignored — it must never create rows for a different user.
 
-### FR-4 Add a task inline `[existing]`
+### FR-4 Add a task inline `[existing]` `[changed in v2]`
 As a user filling the form, I can add a new task to the current project with a "+ Add task"
 button without leaving the page.
-- Acceptance (`POST /tasks`, `quickStore`): requires `project_id` (exists), `title` (string,
-  max 255), `user_id` (exists). The task is created with `firstOrCreate` on
-  (`project_id`, trimmed `title`); an existing task is reused without changing its audit
-  fields. Returns JSON `{id, project_id, title}` with HTTP 201. Rate-limited to 30 per minute.
+- Acceptance (`POST /tasks`, `quickStore`): requires `project_id` (exists) and `title` (string,
+  max 255). The task is created with `firstOrCreate` on (`project_id`, trimmed `title`); an
+  existing task is reused without changing its audit fields. Returns JSON
+  `{id, project_id, title}` with HTTP 201. Rate-limited to 30 per minute.
+- Submission identity (changed in v2 — see FR-12): the creator (`created_by`) is the UUID owner,
+  resolved server-side from the UUID; any client-supplied `user_id` is ignored and must not be
+  trusted to set the acting identity.
 
 ### FR-5 Forward each submission to n8n `[existing]`
 As the business, every submitted work log is delivered to the company n8n webhook for
@@ -122,13 +152,33 @@ As an administrator, I create, list, filter, search, edit and delete tasks.
   shows creator/updater and a worklog count; a task with work logs cannot be deleted and cannot
   be moved to a different project; create/update stamp `created_by` / `updated_by`.
 
+### FR-12 Submission identity is bound to the UUID link `[new]`
+As the business, I want the UUID link to be the sole, intentional identity for a public
+submission, so that an employee's work logs and inline tasks are always recorded against the
+user that UUID belongs to — and never against another user — even though no one logs in.
+- **Design decision (owner, 2026-11-16):** the work-log form is deliberately public and
+  password-free. There is no employee dashboard or login. Whoever holds a user's UUID link may
+  submit work logs **for that user**. This is accepted and intended — it is not treated as a
+  defect. The public UUID URL is permanent: it does not expire and is not rotated (see §9,
+  item 2).
+- Acceptance: on `POST /worklogs` and `POST /tasks`, the server determines the acting user
+  **only** from the UUID associated with the request (the UUID that loaded the form / the
+  UUID-scoped route). Any `user_id` in the request body is ignored for identity purposes.
+- It must be impossible to create work logs or tasks on behalf of a user other than the UUID
+  owner by supplying a different `user_id`. A deliberate attempt resolves to the UUID owner,
+  or is rejected with HTTP 403; it must never write rows for the supplied victim user. This
+  closes the IDOR raised in QA (BUG-1) while preserving the public, no-login design above.
+- The UUID resolves to exactly one existing user; an unknown UUID yields HTTP 404 (as FR-1).
+
 ## 4. Non-Functional Requirements
 
 - **Security / access:** admin area protected by session auth + `role:admin` middleware. Login
-  throttled 5/min; public submission endpoints throttled 30/min. CSRF protection on all
-  browser POSTs. Passwords hashed (bcrypt, 12 rounds). The n8n webhook is authenticated with a
-  shared secret header. **Note:** the employee submission flow is not otherwise authenticated —
-  see Known Issues (Section 9).
+  throttled 5/min; public submission endpoints (`POST /worklogs`, `POST /tasks`) throttled 30/min;
+  the public form route `GET /worklog/{uuid}` is also throttled (30/min per IP — new in v3, FR-13)
+  to limit UUID enumeration. CSRF protection on all browser POSTs. Passwords hashed (bcrypt, 12
+  rounds). The n8n webhook is authenticated with a shared secret header. **Note:** the employee
+  submission flow is intentionally public (UUID link only, no login) — see FR-12 and Known Issues
+  (Section 9).
 - **Reliability:** work logs are written in a DB transaction; webhook delivery is queued and
   retried, so a transient n8n outage does not lose data (requires a running queue worker).
 - **Performance:** the form loads the whole Project For/Project/Task tree in one query set;
@@ -179,7 +229,7 @@ addition to task_id, which is why used tasks/projects cannot be re-parented.)
 ## 7. Interfaces
 
 ### Screens / pages
-- `GET /worklog/{uuid}` — public employee work-log form.
+- `GET /worklog/{uuid}` — public employee work-log form; throttled 30/min per IP (FR-13).
 - `GET /login`, `POST /login`, `POST /logout` — admin authentication.
 - `GET /dashboard` — admin dashboard (admin only).
 - `admin/users`, `admin/project-fors`, `admin/projects`, `admin/tasks` — resource CRUD screens
@@ -210,15 +260,21 @@ testable units for QA:
 
 ## 9. Known Issues / Technical Debt
 
-1. **Unauthenticated submission identity (integrity risk).** `POST /worklogs` and `POST /tasks`
-   take `user_id` from the request body and only validate that it exists. There is no check
-   that the submitter actually owns the UUID that loaded the page (employees are not logged in).
-   Because user IDs are sequential integers, anyone who can reach the endpoints could log hours
-   or create tasks on behalf of any user. The UUID in the URL is effectively the only control,
-   and it is not verified at submit time.
-2. **UUID link is the sole secret.** The `GET /worklog/{uuid}` page has no throttle (only the
-   POSTs do) and the UUID never expires or rotates. Anyone with the link can submit as that
-   user indefinitely.
+1. **Cross-user submission (IDOR) — being fixed in v2.** As built in v1, `POST /worklogs` and
+   `POST /tasks` took `user_id` from the request body and only validated that it exists, so a
+   caller could log hours or create tasks on behalf of **any** user (user IDs are sequential).
+   Per the owner's decision (2026-11-16) this is a defect to fix: identity must come from the
+   UUID, not the body (see FR-12). Note this is distinct from the public, no-login design, which
+   the owner keeps — the fix only stops submitting *as a different user than the UUID owner*.
+2. **Public, non-expiring UUID link — accepted by design; throttle added in v3.** The
+   `GET /worklog/{uuid}` page is intentionally a **public URL for each employee** and the UUID is
+   permanent: it does not expire or rotate (owner decision, 2026-11-16 — "worklog/{uuid} is public
+   url for each employee"; "this public url will never be changed"). Anyone holding a user's link
+   can submit for that user indefinitely; this is the intended access model, so QA BUG-2's
+   rotation/expiry recommendation is **declined**. The *other* half of BUG-2 — the missing rate
+   limit on the GET route — is addressed without changing the URL: the route is now throttled
+   (FR-13) to limit high-volume UUID enumeration. The owner may veto the throttle on the BUG-2
+   card, in which case FR-13 is withdrawn and this stays fully as-is.
 3. **Webhook secret present in `.env` on disk.** The working directory contains a real-looking
    `N8N_WEBHOOK_SECRET`. It must never be committed; rotate it if it has been shared. Use
    `.env.example` for keys only.
@@ -253,3 +309,5 @@ testable units for QA:
 | Version | Date | Author | Description of changes |
 |---|---|---|---|
 | 1 | 2026-11-16 | AI Engineer | As-is baseline documented from code. |
+| 2 | 2026-11-16 | AI Engineer | Owner decision on QA BUG-1/BUG-2: public non-expiring UUID link accepted by design; added FR-12 (submission identity bound to UUID); changed FR-3 and FR-4 to resolve the acting user from the UUID and ignore client-supplied `user_id`; updated §9 items 1–2. |
+| 3 | 2026-11-16 | AI Engineer | QA BUG-2 (owner confirmed `worklog/{uuid}` is a public per-employee URL): UUID rotation/expiry stays declined; added FR-13 and an NFR to throttle `GET /worklog/{uuid}` (30/min per IP) against enumeration without changing the URL; updated FR-1 acceptance, §7 interfaces and §9 item 2. |

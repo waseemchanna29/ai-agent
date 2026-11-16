@@ -77,9 +77,24 @@ _DEV_CMDS = _shell(
     "git status", "git diff", "git log", "git init", "git add", "mkdir", "ls", "cat",
     "cd", "New-Item", "Get-ChildItem", "Get-Content", "curl", "Invoke-WebRequest",
 )
+# TEAM_GIT_PUSH=true: the developer may branch, commit, push and open PRs on GitHub, using
+# GITHUB_TOKEN from .env through github_helper.py. The token itself never reaches the agent.
+GIT_PUSH = os.getenv("TEAM_GIT_PUSH", "false").lower() == "true"
+GITHUB_HELPER = ROOT / "github_helper.py"
+_GIT_WRITE_CMDS = _shell(
+    "git checkout", "git switch", "git branch", "git commit", "git push", "git fetch", "git pull",
+    "git remote", "git rev-parse", "git stash", f"python {GITHUB_HELPER.as_posix()}",
+)
+# Never: force-push or push straight to main/master (team rule: branch + PR).
+_NO_PUSH = [f"git push {x}" for x in (
+    "--force", "-f", "--force-with-lease", "--mirror", "--delete", "-d",
+    "origin main", "origin master", "origin HEAD:main", "origin HEAD:master", "origin main:main",
+    "-u origin main", "-u origin master", "--set-upstream origin main", "--set-upstream origin master",
+)]
+_GIT_DENY = _shell(*_NO_PUSH) + [f"{tool}({c})" for c in _NO_PUSH for tool in ("Bash", "PowerShell")]
 ALLOWED_TOOLS = {
     "requirements": ["WebSearch", "WebFetch", *_shell("ls", "Get-ChildItem")],
-    "development": _DEV_CMDS,
+    "development": _DEV_CMDS + (_GIT_WRITE_CMDS if GIT_PUSH else []),
     "qa": _DEV_CMDS,
     "docs": _shell("ls", "Get-ChildItem", "mkdir"),
 }
@@ -309,6 +324,20 @@ def system_extra(proj: Project, role: str) -> str:
             f"Follow the 'All agents' section and the section for your role ({role}).\n\n"
             + rules.read_text(encoding="utf-8")
         )
+    if role == "development" and GIT_PUSH:
+        parts.append(
+            "# GIT & GITHUB (enabled by the owner)\n"
+            "You may create a task branch, commit, push it, and open a pull request — no human approval "
+            "prompt is needed. GitHub login is automatic: git gets the owner's token through a credential "
+            "helper. Never ask for, print, store or put a token in a URL or remote.\n"
+            "- Never commit or push to main/master; never force-push (these are blocked).\n"
+            "- Steps: `git checkout -b <type>/<task>` → `git add <files>` → `git commit -m \"...\"` → "
+            "`git push -u origin <branch>`.\n"
+            f"- Open the PR with: `python {GITHUB_HELPER.as_posix()} pr --title \"...\" --body \"...\"` "
+            "(run in the code folder; it targets dev or staging if one exists, else main, and prints the "
+            "PR link). Use --body-file <file> for a long body. `gh` is not installed.\n"
+            "- Report the branch name and the PR link in your summary."
+        )
     return "\n\n---\n\n".join(parts)
 
 
@@ -353,6 +382,10 @@ def build_cmd(proj: Project, role: str, prompt: str, session: str, resume: bool,
     if read_only_code:
         # Investigation step: the agent may run tests but cannot change project files.
         deny.append(f"Edit({posix_rule(code)}/**)")
+    # Secrets file: no agent reads it (tokens reach git only through github_helper.py).
+    deny.append(f"Read({posix_rule(ROOT / '.env')})")
+    if role == "development":
+        deny += _GIT_DENY
     cmd += ["--disallowedTools", *deny]
     return cmd
 
@@ -419,6 +452,20 @@ def child_env() -> dict:
             env.pop(k)
         elif inside_host and k == "ANTHROPIC_BASE_URL":
             env.pop(k)
+    env.pop("GITHUB_TOKEN", None)   # the agent never sees it; git asks github_helper.py instead
+    env.pop("GH_TOKEN", None)
+    if GIT_PUSH:
+        # Extra git config for the agent's git only (nothing is written to your .gitconfig):
+        # for github.com, drop other credential helpers (no login pop-ups) and use ours.
+        py = Path(sys.executable).as_posix()
+        helper = f'!"{py}" "{GITHUB_HELPER.as_posix()}" credential'
+        n = int(env.get("GIT_CONFIG_COUNT", "0") or 0)
+        for i, (k, v) in enumerate([("credential.https://github.com.helper", ""),
+                                    ("credential.https://github.com.helper", helper)], start=n):
+            env[f"GIT_CONFIG_KEY_{i}"], env[f"GIT_CONFIG_VALUE_{i}"] = k, v
+        env["GIT_CONFIG_COUNT"] = str(n + 2)
+        env["GIT_TERMINAL_PROMPT"] = "0"
+        env["GCM_INTERACTIVE"] = "never"
     return env
 
 
