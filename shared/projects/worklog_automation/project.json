@@ -1,0 +1,16 @@
+{
+  "name": "worklog_automation",
+  "created": "2026-11-16 10:05",
+  "code_dir": "C:\\xampp\\htdocs\\worklog_automation",
+  "existing_code": true,
+  "phases": {
+    "requirements": "done",
+    "development": "pending",
+    "qa": "pending",
+    "docs": "pending"
+  },
+  "sessions": {
+    "requirements": "f770c1ec-deec-4dbe-b528-9e10eb44c0c5",
+    "development": "4688f19d-ae20-476c-8e9f-3ba9f543832b"
+  }
+}

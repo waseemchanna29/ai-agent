@@ -1,0 +1,18 @@
+{
+  "name": "todo-app",
+  "created": "2026-11-11 15:24",
+  "code_dir": "C:\\xampp\\htdocs\\todo-app",
+  "existing_code": false,
+  "phases": {
+    "requirements": "done",
+    "development": "done",
+    "qa": "done",
+    "docs": "done"
+  },
+  "sessions": {
+    "requirements": "040649d9-aa5a-4309-afa3-e7469b7da435",
+    "development": "3fed191a-2770-411f-8abc-19134fa05972",
+    "qa": "bb212be6-7840-4999-b8f5-91bc301c8218",
+    "docs": "bef6d943-636b-4d44-b9c1-116cf67eb2a8"
+  }
+}

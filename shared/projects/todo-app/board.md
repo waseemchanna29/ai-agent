@@ -1,0 +1,64 @@
+# Status board — todo-app
+
+- 2026-11-11 15:24 owner: created project
+- 2026-11-11 15:25 requirements: started
+- 2026-11-11 15:25 requirements: finished — REQUIREMENTS.md v1 written (4 FRs: add/list/complete/delete), handoff to development
+- 2026-11-11 15:30 requirements: updated — v2 adds auth (FR-5/6/7 register/login/logout); tasks now per-user. Notified development + qa
+- 2026-11-11 15:30 requirements: approved
+- 2026-11-11 15:32 development: processed inbox — ack v2 spec change; no code yet, will build clean against v2 (no rework); replied to requirements
+- 2026-11-11 15:32 development: answered 1 inbox message(s)
+- 2026-11-11 15:32 qa: answered 1 inbox message(s)
+- 2026-11-11 15:33 requirements: answered 1 inbox message(s)
+- 2026-11-11 15:33 development: started
+- 2026-11-11 15:33 development: finished — Laravel 12 app built against v2 (FR-1..7, auth + per-user tasks); 21 tests pass; e2e verified on MySQL school_db; handoff to qa
+- 2026-11-11 15:46 development: approved
+- 2026-11-11 15:46 qa: started
+- 2026-11-11 15:51 qa: started
+- 2026-11-11 15:51 qa: started
+- 2026-11-12 09:35 qa: started
+- 2026-11-12 09:35 qa: finished — READY; 30 automated tests pass (21 dev + 9 QA), live CSRF/auth checks pass, no blocking bugs; handoff to docs
+- 2026-11-12 10:01 qa: approved
+- 2026-11-12 10:01 docs: started
+- 2026-11-12 10:01 docs: finished — full doc set (USER_GUIDE, API, ARCHITECTURE, DEPLOYMENT, CHANGELOG) + code README written from source; handoff to owner
+- 2026-11-12 10:07 docs: approved
+- 2026-11-12 11:03 docs: started
+- 2026-11-12 11:03 docs: finished — added missing mandatory "Document Version History" section to CHANGELOG.md (v1, Initial release); no functional change to document since nothing changed upstream; handoff to owner
+- 2026-11-12 11:05 docs: approved
+- 2026-11-12 11:14 development: applying approved fix (20261112-1112-fix.md), backup 20261112-1112
+- 2026-11-12 11:14 development: fix accepted (20261112-1112-fix.md)
+- 2026-11-12 14:55 development: applying approved fix (20261112-1436-fix.md), backup 20261112-1436
+- 2026-11-12 14:36 development: applied fix 20261112-1436-fix.md — user management module completed (6 routes + 3 views + nav link + 10 tests); 31 tests pass; controller untouched
+- 2026-11-12 15:00 development: fix accepted (20261112-1436-fix.md)
+- 2026-11-12 15:01 docs: started
+- 2026-11-12 15:01 docs: finished — added "Unreleased" CHANGELOG entry for the User Management module (fixes 20261112-1112/1436), flagged pending QA + missing REQUIREMENTS FRs; handoff to owner
+- 2026-11-12 15:03 docs: approved
+- 2026-11-12 15:04 qa: started
+- 2026-11-12 15:10 qa: finished — NOT READY; FR-8 (due date) not implemented & not in spec, cannot test; 31 tests pass (no regression); handoff to development, messaged requirements
+- 2026-11-12 15:08 qa: approved
+- 2026-11-12 15:09 docs: started
+- 2026-11-12 15:09 docs: finished — refreshed full doc set (USER_GUIDE/API/ARCHITECTURE/README) for the User Management module; added "[Unreleased] FR-8 due date" entry to CHANGELOG (requested, not built — NOT READY per QA); added missing Document Version History section to USER_GUIDE/API/ARCHITECTURE/DEPLOYMENT; handoff to owner
+- 2026-11-12 16:22 docs: approved
+- 2026-11-12 16:33 qa: started from Trello card 'Test Cases' (@waseemiqbal21)
+- 2026-11-12 16:34 qa: finished — tests run & pass (52 total: 31 dev + 9 QaExtra + 12 QaSupplemental, 149 assertions); no regression, no files changed; handoff to docs
+- 2026-11-12 16:34 qa: finished Trello card 'Test Cases'
+- 2026-11-13 09:18 development: started from Trello card 'User has status field active and inactive' (@waseemiqbal21)
+- 2026-11-13 09:18 development: finished — user status field (active/inactive) added; inactive users blocked at login; Users module create/edit/list support status; migrated school_db; 35 tests pass; handoff 10 to qa, asked requirements for an FR
+- 2026-11-13 09:22 development: finished Trello card 'User has status field active and inactive'
+- 2026-11-13 09:40 qa: started from Trello card 'User has status field active and inactive' (@waseemiqbal21)
+- 2026-11-13 09:40 qa: finished — NOT READY (card XhsrArpP): status login-block works, but BUG-1 regressed user-create (500, Undefined array key "name1"); 34 passed/2 failed; handoff 11-qa-to-development
+- 2026-11-13 09:44 qa: finished Trello card 'User has status field active and inactive'
+- 2026-11-13 09:44 development: started from Trello card '[BUG-1] Creating a user via Users module crashes (500) — Undefined array key "name1"' (@waseemiqbal21)
+- 2026-11-13 09:44 development: finished — BUG-1 fixed (store() name1/email1 typo → name/email in UsersController), UserManagementTest 13/13 pass, handoff 12 to QA
+- 2026-11-13 09:45 development: finished Trello card '[BUG-1] Creating a user via Users module crashes (500) — Undefined array key "name1"'
+- 2026-11-13 10:04 qa: started from Trello card '[BUG-1] Creating a user via Users module crashes (500) — Undefined array key "name1"' (@waseemiqbal21)
+- 2026-11-13 10:04 qa: finished — BUG-1 re-test READY; store() fixed, 36/36 dev + 21/21 QA tests pass, no open bugs, handoff 13-qa-to-docs
+- 2026-11-13 10:06 qa: finished Trello card '[BUG-1] Creating a user via Users module crashes (500) — Undefined array key "name1"' — 0 bug(s)
+- 2026-11-13 10:25 qa: started from Trello card '[BUG-1] Creating a user via Users module crashes (500) — Undefined array key "name1"' (@waseemiqbal21)
+- 2026-11-13 10:20 qa: finished — BUG-1 confirmation re-run; still READY, 36/36 dev + 21/21 QA tests pass, no open bugs
+- 2026-11-13 10:26 qa: finished Trello card '[BUG-1] Creating a user via Users module crashes (500) — Undefined array key "name1"' — 0 bug(s)
+- 2026-11-13 10:28 qa: started from Trello card '[BUG-1] Creating a user via Users module crashes (500) — Undefined array key "name1"' (@waseemiqbal21)
+- 2026-11-13 10:32 qa: finished — BUG-1 third confirmation re-run; still READY, 36/36 dev + 21/21 QA tests pass, no open bugs, no code change since fix
+- 2026-11-13 10:29 qa: finished Trello card '[BUG-1] Creating a user via Users module crashes (500) — Undefined array key "name1"' — 0 bug(s)
+- 2026-11-13 10:50 qa: started from Trello card 'User has status field active and inactive' (@waseemiqbal21)
+- 2026-11-13 10:51 qa: finished — READY (card XhsrArpP): BUG-1 fix re-verified, 36/0 dev + 9/0 + 12/0 QA, no name1/email1 remain; handoff 12-qa-to-docs
+- 2026-11-13 10:52 qa: finished Trello card 'User has status field active and inactive' — 0 bug(s)

@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Autonomous AI Software Team</title>
+<style>
+  @page { size: A4; margin: 0; }
+  :root {
+    --ink: #0f172a; --body: #334155; --muted: #64748b; --line: #cbd5e1; --soft: #f1f5f9;
+    --blue: #1d4ed8; --blue-soft: #dbeafe; --teal: #0f766e; --teal-soft: #ccfbf1;
+    --amber: #b45309; --amber-soft: #fef3c7; --violet: #6d28d9; --violet-soft: #ede9fe;
+    --red: #b91c1c; --red-soft: #fee2e2; --green: #15803d; --green-soft: #dcfce7;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #fff; }
+  body { font: 9.6pt/1.5 "Segoe UI", Arial, sans-serif; color: var(--body); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .page { width: 210mm; height: 297mm; padding: 15mm 16mm 13mm; position: relative; page-break-after: always; overflow: hidden; }
+  .page:last-child { page-break-after: auto; }
+  .run-head { position: absolute; top: 7mm; left: 16mm; right: 16mm; display: flex; justify-content: space-between;
+    font-size: 7.5pt; color: var(--muted); letter-spacing: .04em; }
+  .run-foot { position: absolute; bottom: 6mm; left: 16mm; right: 16mm; display: flex; justify-content: space-between;
+    font-size: 7.5pt; color: var(--muted); border-top: 1px solid var(--line); padding-top: 2mm; }
+  h1 { font-size: 25pt; line-height: 1.15; color: var(--ink); margin: 0 0 3mm; letter-spacing: -.01em; }
+  h2 { font-size: 15pt; color: var(--ink); margin: 0 0 1.5mm; }
+  h2 .num { color: var(--blue); margin-right: 2mm; }
+  h3 { font-size: 10.5pt; color: var(--ink); margin: 4mm 0 1.5mm; }
+  p { margin: 0 0 2.4mm; }
+  .lead { font-size: 10.5pt; color: var(--body); }
+  .kicker { font-size: 8pt; letter-spacing: .14em; text-transform: uppercase; color: var(--blue); font-weight: 600; }
+  .rule { height: 3px; width: 26mm; background: var(--blue); margin: 3mm 0 5mm; border-radius: 2px; }
+  figure { margin: 2.5mm 0 3mm; }
+  figure svg { width: 100%; height: auto; display: block; }
+  figcaption { font-size: 7.8pt; color: var(--muted); margin-top: 1.2mm; }
+  figcaption b { color: var(--ink); }
+  table { width: 100%; border-collapse: collapse; font-size: 8.4pt; margin: 1.5mm 0 3mm; }
+  th { text-align: left; background: var(--ink); color: #fff; font-weight: 600; padding: 1.8mm 2.2mm; }
+  td { padding: 1.7mm 2.2mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:nth-child(even) td { background: var(--soft); }
+  td b { color: var(--ink); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3mm; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; }
+  .card { border: 1px solid var(--line); border-radius: 2.5mm; padding: 3mm 3.4mm; background: #fff; }
+  .card h4 { margin: 0 0 1mm; font-size: 9.4pt; color: var(--ink); }
+  .card p { margin: 0; font-size: 8.4pt; line-height: 1.45; }
+  .card .tag { display: inline-block; font-size: 7pt; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    padding: .4mm 1.6mm; border-radius: 1mm; margin-bottom: 1.4mm; }
+  .stat { border-radius: 2.5mm; padding: 3.2mm; background: var(--soft); }
+  .stat .n { font-size: 19pt; font-weight: 700; color: var(--blue); line-height: 1; }
+  .stat .l { font-size: 8pt; color: var(--body); margin-top: 1.2mm; }
+  ul.tight { margin: 0 0 2.4mm; padding-left: 4.5mm; } ul.tight li { margin: 0 0 1mm; }
+  .note { border-left: 3px solid var(--blue); background: var(--blue-soft); padding: 2.2mm 3mm; font-size: 8.4pt; border-radius: 0 2mm 2mm 0; }
+  code { font: 8pt Consolas, monospace; background: var(--soft); padding: 0 1mm; border-radius: 1mm; color: var(--ink); }
+  /* cover */
+  .cover { padding: 0; background: var(--ink); color: #e2e8f0; }
+  .cover .band { padding: 30mm 18mm 0; }
+  .cover h1 { color: #fff; font-size: 31pt; }
+  .cover .sub { font-size: 12pt; color: #cbd5e1; max-width: 150mm; }
+  .cover .kicker { color: #93c5fd; }
+  .cover .rule { background: #60a5fa; }
+  .cover .meta { position: absolute; left: 18mm; bottom: 20mm; font-size: 9pt; color: #94a3b8; }
+  .cover .meta b { color: #fff; font-weight: 600; }
+  .cover .art { margin: 12mm 0 0; padding: 0 18mm; }
+  .cover .pill { display: inline-block; border: 1px solid #334155; color: #cbd5e1; border-radius: 10mm; padding: 1mm 3.5mm;
+    font-size: 8.4pt; margin: 0 1.6mm 1.6mm 0; }
+  .cover .hl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; margin: 10mm 18mm 0; }
+  .cover .hl div { border-top: 2px solid #3b82f6; padding-top: 2.5mm; }
+  .cover .hl b { display: block; color: #fff; font-size: 10pt; margin-bottom: 1mm; }
+  .cover .hl span { font-size: 8.6pt; color: #94a3b8; line-height: 1.45; }
+  .halo text { paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; }
+  .thread { border: 1px solid var(--line); border-radius: 2.5mm; overflow: hidden; }
+  .thread .bar { background: #0079bf; color: #fff; font-size: 8.6pt; font-weight: 600; padding: 2mm 3.4mm; }
+  .msg { display: grid; grid-template-columns: 8mm 1fr; gap: 2.4mm; padding: 2.4mm 3.4mm; border-top: 1px solid var(--soft); }
+  .av { width: 8mm; height: 8mm; border-radius: 50%; color: #fff; font-size: 7.5pt; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; }
+  .msg .who { font-size: 8pt; font-weight: 700; color: var(--ink); }
+  .msg .who span { font-weight: 400; color: var(--muted); margin-left: 1.5mm; }
+  .msg .txt { font-size: 8.4pt; line-height: 1.45; margin-top: .5mm; }
+  .mention { color: var(--blue); font-weight: 600; }
+  .closing { background: var(--ink); color: #cbd5e1; border-radius: 3mm; padding: 5mm 6mm; margin-top: 5mm; }
+  .closing h3 { color: #fff; margin: 0 0 1.5mm; }
+  .closing p { font-size: 8.8pt; margin: 0; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ PAGE 1 — COVER + SUMMARY -->
+<section class="page cover">
+  <div class="band">
+    <div class="kicker">Portfolio · AI Engineering Case Study</div>
+    <div class="rule"></div>
+    <h1>Autonomous AI Software Team</h1>
+    <p class="sub">A multi-agent system that gathers requirements, writes code, tests it and documents it, coordinated
+      through a shared workspace, governed by human approval gates and driven directly from Trello.</p>
+    <div style="margin-top:6mm">
+      <span class="pill">4 specialised agents</span><span class="pill">Claude Code runtime</span>
+      <span class="pill">Trello webhooks</span><span class="pill">Human-in-the-loop</span>
+      <span class="pill">Versioned PDF documentation</span>
+    </div>
+  </div>
+
+  <div class="art">
+    <svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial" aria-label="Agent team overview">
+      <defs>
+        <marker id="ca" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#60a5fa"/></marker>
+        <linearGradient id="hub" x1="0" x2="1"><stop offset="0" stop-color="#1d4ed8"/><stop offset="1" stop-color="#0f766e"/></linearGradient>
+      </defs>
+      <!-- owner -->
+      <rect x="10" y="118" width="120" height="64" rx="10" fill="#1e293b" stroke="#334155"/>
+      <text x="70" y="145" fill="#fff" font-size="14" font-weight="600" text-anchor="middle">Owner</text>
+      <text x="70" y="164" fill="#94a3b8" font-size="10.5" text-anchor="middle">CLI · Trello</text>
+      <line x1="130" y1="150" x2="218" y2="150" stroke="#60a5fa" stroke-width="2" marker-end="url(#ca)"/>
+      <!-- hub -->
+      <rect x="222" y="104" width="190" height="92" rx="14" fill="url(#hub)"/>
+      <text x="317" y="140" fill="#fff" font-size="15" font-weight="700" text-anchor="middle">Orchestrator</text>
+      <text x="317" y="160" fill="#dbeafe" font-size="10.5" text-anchor="middle">routing · gates · isolation</text>
+      <text x="317" y="176" fill="#dbeafe" font-size="10.5" text-anchor="middle">rules · PDFs · backups</text>
+      <!-- agents -->
+      <g font-size="12.5" font-weight="600">
+        <line x1="412" y1="132" x2="478" y2="42" stroke="#60a5fa" stroke-width="1.6" marker-end="url(#ca)"/>
+        <line x1="412" y1="142" x2="478" y2="112" stroke="#60a5fa" stroke-width="1.6" marker-end="url(#ca)"/>
+        <line x1="412" y1="158" x2="478" y2="188" stroke="#60a5fa" stroke-width="1.6" marker-end="url(#ca)"/>
+        <line x1="412" y1="168" x2="478" y2="258" stroke="#60a5fa" stroke-width="1.6" marker-end="url(#ca)"/>
+        <rect x="482" y="18" width="208" height="48" rx="9" fill="#312e81"/><text x="586" y="40" fill="#fff" text-anchor="middle">Requirements Analyst</text>
+        <text x="586" y="56" fill="#c7d2fe" font-size="9.5" font-weight="400" text-anchor="middle">BRD · SRS · change log</text>
+        <rect x="482" y="88" width="208" height="48" rx="9" fill="#1e3a8a"/><text x="586" y="110" fill="#fff" text-anchor="middle">Developer</text>
+        <text x="586" y="126" fill="#bfdbfe" font-size="9.5" font-weight="400" text-anchor="middle">code · tests · fixes</text>
+        <rect x="482" y="164" width="208" height="48" rx="9" fill="#134e4a"/><text x="586" y="186" fill="#fff" text-anchor="middle">QA Engineer</text>
+        <text x="586" y="202" fill="#99f6e4" font-size="9.5" font-weight="400" text-anchor="middle">test plans · reports · bug cards</text>
+        <rect x="482" y="234" width="208" height="48" rx="9" fill="#78350f"/><text x="586" y="256" fill="#fff" text-anchor="middle">Technical Writer</text>
+        <text x="586" y="272" fill="#fde68a" font-size="9.5" font-weight="400" text-anchor="middle">guides · API · architecture</text>
+      </g>
+      <text x="317" y="236" fill="#94a3b8" font-size="10.5" text-anchor="middle">shared workspace: brief · rules · handoffs · inboxes</text>
+      <rect x="236" y="214" width="162" height="1" fill="#334155"/>
+    </svg>
+  </div>
+
+  <div class="hl">
+    <div><b>From request to release</b><span>One brief becomes a specification, working code, a QA verdict and client-ready PDFs.</span></div>
+    <div><b>Human in control</b><span>Approval gates, read-only investigation, automatic backups and one-step undo.</span></div>
+    <div><b>Runs from Trello</b><span>Mention the agent on a card; it reads the card, picks the right specialist and replies.</span></div>
+  </div>
+
+  <div class="meta">Prepared by <b>AI Engineer</b> &nbsp;·&nbsp; Version 1.0 &nbsp;·&nbsp; November 2026</div>
+</section>
+
+<!-- ============================================================ PAGE 2 — SUMMARY + ARCHITECTURE -->
+<section class="page">
+  <div class="run-head"><span>AUTONOMOUS AI SOFTWARE TEAM</span><span>System overview</span></div>
+
+  <h2><span class="num">01</span>Executive Summary</h2>
+  <div class="rule"></div>
+  <p class="lead">The system turns a one-line business request into a specified, implemented, tested and documented
+    software change. Four AI agents, each with a single responsibility, work like a small delivery team. A lightweight
+    orchestrator assigns the work, enforces boundaries between the agents and stops for human approval at every
+    decision point.</p>
+
+  <div class="grid4" style="margin:3mm 0 4mm">
+    <div class="stat"><div class="n">4</div><div class="l">Specialised agents with isolated workspaces</div></div>
+    <div class="stat"><div class="n">2</div><div class="l">Entry points: command line and Trello mentions</div></div>
+    <div class="stat"><div class="n">100%</div><div class="l">Code changes backed up and reversible</div></div>
+    <div class="stat"><div class="n">PDF</div><div class="l">Client-ready docs with version history</div></div>
+  </div>
+
+  <h2><span class="num">02</span>System Architecture</h2>
+  <div class="rule"></div>
+  <figure>
+    <svg viewBox="0 0 700 330" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial">
+      <defs>
+        <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker>
+        <marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1d4ed8"/></marker>
+      </defs>
+      <!-- entry -->
+      <rect x="6" y="40" width="128" height="58" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+      <text x="70" y="64" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">Command line</text>
+      <text x="70" y="82" font-size="9.5" fill="#64748b" text-anchor="middle">team.py new / run / dev</text>
+      <rect x="6" y="122" width="128" height="58" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+      <text x="70" y="146" font-size="12" font-weight="700" fill="#0f172a" text-anchor="middle">Trello board</text>
+      <text x="70" y="164" font-size="9.5" fill="#64748b" text-anchor="middle">@agent mentions</text>
+      <line x1="134" y1="69" x2="186" y2="104" stroke="#475569" stroke-width="1.5" marker-end="url(#a)"/>
+      <line x1="134" y1="151" x2="186" y2="122" stroke="#475569" stroke-width="1.5" marker-end="url(#a)"/>
+      <!-- orchestrator -->
+      <rect x="190" y="62" width="160" height="98" rx="10" fill="#1d4ed8"/>
+      <text x="270" y="88" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">Orchestrator</text>
+      <text x="270" y="106" font-size="9.5" fill="#dbeafe" text-anchor="middle">phases &amp; approval gates</text>
+      <text x="270" y="121" font-size="9.5" fill="#dbeafe" text-anchor="middle">permission sandbox per agent</text>
+      <text x="270" y="136" font-size="9.5" fill="#dbeafe" text-anchor="middle">rule injection · PDF export</text>
+      <text x="270" y="151" font-size="9.5" fill="#dbeafe" text-anchor="middle">Trello bridge (webhooks)</text>
+      <!-- rules -->
+      <rect x="190" y="12" width="160" height="34" rx="7" fill="#fef3c7" stroke="#f59e0b"/>
+      <text x="270" y="33" font-size="10" font-weight="600" fill="#92400e" text-anchor="middle">Global + project rules</text>
+      <line x1="270" y1="46" x2="270" y2="60" stroke="#b45309" stroke-width="1.5" marker-end="url(#a)"/>
+      <!-- agents -->
+      <g font-size="11" font-weight="700">
+        <rect x="408" y="10" width="160" height="44" rx="8" fill="#ede9fe" stroke="#a78bfa"/><text x="488" y="30" fill="#4c1d95" text-anchor="middle">Requirements Analyst</text>
+        <text x="488" y="45" font-size="9" font-weight="400" fill="#6d28d9" text-anchor="middle">own folder · role CLAUDE.md</text>
+        <rect x="408" y="64" width="160" height="44" rx="8" fill="#dbeafe" stroke="#60a5fa"/><text x="488" y="84" fill="#1e3a8a" text-anchor="middle">Developer</text>
+        <text x="488" y="99" font-size="9" font-weight="400" fill="#1d4ed8" text-anchor="middle">writes only the codebase</text>
+        <rect x="408" y="118" width="160" height="44" rx="8" fill="#ccfbf1" stroke="#2dd4bf"/><text x="488" y="138" fill="#134e4a" text-anchor="middle">QA Engineer</text>
+        <text x="488" y="153" font-size="9" font-weight="400" fill="#0f766e" text-anchor="middle">reads code · never edits it</text>
+        <rect x="408" y="172" width="160" height="44" rx="8" fill="#fef3c7" stroke="#fbbf24"/><text x="488" y="192" fill="#78350f" text-anchor="middle">Technical Writer</text>
+        <text x="488" y="207" font-size="9" font-weight="400" fill="#b45309" text-anchor="middle">docs folder + README only</text>
+      </g>
+      <g stroke="#1d4ed8" stroke-width="1.4" fill="none">
+        <path d="M350 90 C380 90 380 32 404 32" marker-end="url(#ab)"/>
+        <path d="M350 104 C380 104 380 86 404 86" marker-end="url(#ab)"/>
+        <path d="M350 118 C380 118 380 140 404 140" marker-end="url(#ab)"/>
+        <path d="M350 132 C380 132 380 194 404 194" marker-end="url(#ab)"/>
+      </g>
+      <!-- code -->
+      <rect x="596" y="64" width="98" height="98" rx="8" fill="#0f172a"/>
+      <text x="645" y="96" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">Project</text>
+      <text x="645" y="111" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">codebase</text>
+      <text x="645" y="130" font-size="8.6" fill="#94a3b8" text-anchor="middle">web root</text>
+      <text x="645" y="143" font-size="8.6" fill="#94a3b8" text-anchor="middle">/&lt;project&gt;</text>
+      <line x1="568" y1="86" x2="594" y2="96" stroke="#1d4ed8" stroke-width="2" marker-end="url(#ab)"/>
+      <line x1="568" y1="140" x2="594" y2="128" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#a)"/>
+      <line x1="568" y1="194" x2="606" y2="164" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#a)"/>
+      <!-- shared hub -->
+      <rect x="190" y="248" width="504" height="74" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-dasharray="5 4"/>
+      <text x="206" y="268" font-size="11.5" font-weight="700" fill="#0f172a">Shared workspace — the only channel between agents</text>
+      <g font-size="9.3" fill="#334155">
+        <rect x="206" y="278" width="88" height="34" rx="6" fill="#fff" stroke="#cbd5e1"/><text x="250" y="292" text-anchor="middle" font-weight="600">BRIEF · RULES</text><text x="250" y="305" text-anchor="middle" fill="#64748b">request &amp; policy</text>
+        <rect x="302" y="278" width="88" height="34" rx="6" fill="#fff" stroke="#cbd5e1"/><text x="346" y="292" text-anchor="middle" font-weight="600">Handoffs</text><text x="346" y="305" text-anchor="middle" fill="#64748b">phase → phase</text>
+        <rect x="398" y="278" width="88" height="34" rx="6" fill="#fff" stroke="#cbd5e1"/><text x="442" y="292" text-anchor="middle" font-weight="600">Inboxes</text><text x="442" y="305" text-anchor="middle" fill="#64748b">agent questions</text>
+        <rect x="494" y="278" width="88" height="34" rx="6" fill="#fff" stroke="#cbd5e1"/><text x="538" y="292" text-anchor="middle" font-weight="600">Decisions</text><text x="538" y="305" text-anchor="middle" fill="#64748b">append-only</text>
+        <rect x="590" y="278" width="92" height="34" rx="6" fill="#fff" stroke="#cbd5e1"/><text x="636" y="292" text-anchor="middle" font-weight="600">Status board</text><text x="636" y="305" text-anchor="middle" fill="#64748b">timeline</text>
+      </g>
+      <line x1="488" y1="216" x2="488" y2="246" stroke="#475569" stroke-width="1.4" marker-end="url(#a)"/>
+      <line x1="270" y1="160" x2="270" y2="246" stroke="#475569" stroke-width="1.4" marker-end="url(#a)"/>
+      <!-- legend -->
+      <g font-size="8.6" fill="#64748b">
+        <line x1="10" y1="236" x2="34" y2="236" stroke="#1d4ed8" stroke-width="2"/><text x="40" y="239">writes</text>
+        <line x1="10" y1="252" x2="34" y2="252" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="4 3"/><text x="40" y="255">reads only</text>
+      </g>
+    </svg>
+    <figcaption><b>Figure 1.</b> Each agent runs as an independent Claude Code session inside its own folder. File-permission
+      rules block writes outside that folder; collaboration happens only through the shared workspace.</figcaption>
+  </figure>
+
+  <div class="grid3">
+    <div class="card"><span class="tag" style="background:var(--blue-soft);color:var(--blue)">Isolation</span><h4>Least-privilege agents</h4>
+      <p>Every agent can read the whole project but write only its own area. QA can report a bug, never patch it.</p></div>
+    <div class="card"><span class="tag" style="background:var(--amber-soft);color:var(--amber)">Governance</span><h4>Two-level rules</h4>
+      <p>Global rules apply to every project; per-project rules override them. Both are injected into every run.</p></div>
+    <div class="card"><span class="tag" style="background:var(--teal-soft);color:var(--teal)">Traceability</span><h4>File-based handoffs</h4>
+      <p>Specs, handoffs, decisions and a status board give a complete, human-readable audit trail.</p></div>
+  </div>
+
+  <div class="run-foot"><span>Prepared by AI Engineer</span><span>2 / 5</span></div>
+</section>
+
+<!-- ============================================================ PAGE 3 — PIPELINE + ROLES -->
+<section class="page">
+  <div class="run-head"><span>AUTONOMOUS AI SOFTWARE TEAM</span><span>Delivery pipeline</span></div>
+
+  <h2><span class="num">03</span>How the Agents Work Together</h2>
+  <div class="rule"></div>
+  <p>Work moves through four phases. After each phase the orchestrator pauses at an approval gate: the owner approves,
+    sends feedback (the same agent continues its session), or stops and resumes later.</p>
+
+  <figure>
+    <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial">
+      <defs><marker id="p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>
+      <g font-size="12" font-weight="700" text-anchor="middle">
+        <rect x="4" y="20" width="132" height="62" rx="9" fill="#6d28d9"/><text x="70" y="47" fill="#fff">Requirements</text><text x="70" y="65" fill="#ddd6fe" font-size="9.5" font-weight="400">clarify · specify</text>
+        <rect x="190" y="20" width="132" height="62" rx="9" fill="#1d4ed8"/><text x="256" y="47" fill="#fff">Development</text><text x="256" y="65" fill="#dbeafe" font-size="9.5" font-weight="400">build · unit test</text>
+        <rect x="376" y="20" width="132" height="62" rx="9" fill="#0f766e"/><text x="442" y="47" fill="#fff">QA</text><text x="442" y="65" fill="#ccfbf1" font-size="9.5" font-weight="400">verify · regress</text>
+        <rect x="562" y="20" width="132" height="62" rx="9" fill="#b45309"/><text x="628" y="47" fill="#fff">Documentation</text><text x="628" y="65" fill="#fef3c7" font-size="9.5" font-weight="400">explain · publish</text>
+      </g>
+      <!-- gates -->
+      <g font-size="8.5" font-weight="700" fill="#0f172a" text-anchor="middle">
+        <polygon points="163,38 177,51 163,64 149,51" fill="#fef3c7" stroke="#f59e0b"/>
+        <polygon points="349,38 363,51 349,64 335,51" fill="#fef3c7" stroke="#f59e0b"/>
+        <polygon points="535,38 549,51 535,64 521,51" fill="#fef3c7" stroke="#f59e0b"/>
+        <text x="163" y="14">gate</text><text x="349" y="14">gate</text><text x="535" y="14">gate</text>
+      </g>
+      <g stroke="#475569" stroke-width="1.4"><line x1="136" y1="51" x2="147" y2="51"/><line x1="177" y1="51" x2="188" y2="51" marker-end="url(#p)"/>
+        <line x1="322" y1="51" x2="333" y2="51"/><line x1="363" y1="51" x2="374" y2="51" marker-end="url(#p)"/>
+        <line x1="508" y1="51" x2="519" y2="51"/><line x1="549" y1="51" x2="560" y2="51" marker-end="url(#p)"/></g>
+      <!-- fix loop -->
+      <path d="M442 82 C442 118 256 118 256 86" fill="none" stroke="#b91c1c" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#p)"/>
+      <text x="349" y="128" font-size="9.5" fill="#b91c1c" text-anchor="middle" font-weight="600">fix loop: bugs → developer → re-test</text>
+      <!-- outputs -->
+      <g font-size="9.2" fill="#334155">
+        <rect x="4" y="146" width="132" height="66" rx="7" fill="#f8fafc" stroke="#cbd5e1"/>
+        <text x="12" y="163" font-weight="700" fill="#0f172a">Outputs</text><text x="12" y="178">BRD · SRS (FR-IDs)</text><text x="12" y="192">CHANGELOG · versions</text><text x="12" y="206">PDF export</text>
+        <rect x="190" y="146" width="132" height="66" rx="7" fill="#f8fafc" stroke="#cbd5e1"/>
+        <text x="198" y="163" font-weight="700" fill="#0f172a">Outputs</text><text x="198" y="178">Working code</text><text x="198" y="192">Unit tests · DEV_NOTES</text><text x="198" y="206">Handoff to QA</text>
+        <rect x="376" y="146" width="132" height="66" rx="7" fill="#f8fafc" stroke="#cbd5e1"/>
+        <text x="384" y="163" font-weight="700" fill="#0f172a">Outputs</text><text x="384" y="178">Test plan (traceability)</text><text x="384" y="192">QA report: READY / NOT</text><text x="384" y="206">Bug list with file:line</text>
+        <rect x="562" y="146" width="132" height="66" rx="7" fill="#f8fafc" stroke="#cbd5e1"/>
+        <text x="570" y="163" font-weight="700" fill="#0f172a">Outputs</text><text x="570" y="178">User guide · API docs</text><text x="570" y="192">Architecture · deploy</text><text x="570" y="206">PDF + README</text>
+      </g>
+    </svg>
+    <figcaption><b>Figure 2.</b> Four-phase delivery pipeline with owner approval gates and an automated QA → developer fix loop.</figcaption>
+  </figure>
+
+  <table>
+    <tr><th style="width:21%">Agent</th><th style="width:31%">Reads</th><th style="width:27%">Produces</th><th>Guardrail</th></tr>
+    <tr><td><b>Requirements Analyst</b></td><td>Brief, owner answers, existing code (for legacy projects)</td><td>BRD, SRS with FR-IDs, versioned change log</td><td>Asks up to 7 questions before writing; never edits code</td></tr>
+    <tr><td><b>Developer</b></td><td>SRS, project rules, latest QA report</td><td>Code, tests, developer notes, handoff</td><td>Writes only the codebase; shell commands from an allow-list</td></tr>
+    <tr><td><b>QA Engineer</b></td><td>SRS, code, developer handoff</td><td>Test plan, automated tests, QA report, bug list</td><td>Cannot modify application code</td></tr>
+    <tr><td><b>Technical Writer</b></td><td>Everything above + the actual code</td><td>User guide, API, architecture, deployment docs</td><td>Documents what the code does, not what was planned</td></tr>
+  </table>
+
+  <h3>Maintenance mode: test first, fix only after approval</h3>
+  <figure style="margin-top:1mm">
+    <svg viewBox="0 0 700 74" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial" font-size="10">
+      <defs><marker id="m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>
+      <g text-anchor="middle" font-weight="600">
+        <rect x="2" y="16" width="82" height="40" rx="7" fill="#f1f5f9" stroke="#cbd5e1"/><text x="43" y="40" fill="#0f172a">Issue reported</text>
+        <rect x="104" y="16" width="96" height="40" rx="7" fill="#dbeafe" stroke="#60a5fa"/><text x="152" y="33" fill="#1e3a8a">Investigate</text><text x="152" y="47" font-size="8.5" font-weight="400" fill="#1d4ed8">read-only lock</text>
+        <rect x="220" y="16" width="86" height="40" rx="7" fill="#f1f5f9" stroke="#cbd5e1"/><text x="263" y="33" fill="#0f172a">Proposal</text><text x="263" y="47" font-size="8.5" font-weight="400" fill="#64748b">root cause</text>
+        <polygon points="350,12 382,36 350,60 318,36" fill="#fef3c7" stroke="#f59e0b"/><text x="350" y="40" fill="#92400e" font-size="9">approve</text>
+        <rect x="396" y="16" width="78" height="40" rx="7" fill="#f1f5f9" stroke="#cbd5e1"/><text x="435" y="40" fill="#0f172a">Backup</text>
+        <rect x="494" y="16" width="86" height="40" rx="7" fill="#1d4ed8"/><text x="537" y="33" fill="#fff">Apply fix</text><text x="537" y="47" font-size="8.5" font-weight="400" fill="#dbeafe">+ re-verify</text>
+        <rect x="600" y="4" width="96" height="28" rx="7" fill="#dcfce7" stroke="#22c55e"/><text x="648" y="22" fill="#15803d">Accept</text>
+        <rect x="600" y="40" width="96" height="28" rx="7" fill="#fee2e2" stroke="#ef4444"/><text x="648" y="58" fill="#b91c1c">Undo → restore</text>
+      </g>
+      <g stroke="#475569" stroke-width="1.3" marker-end="url(#m)">
+        <line x1="84" y1="36" x2="102" y2="36"/><line x1="200" y1="36" x2="218" y2="36"/><line x1="306" y1="36" x2="316" y2="36"/>
+        <line x1="382" y1="36" x2="394" y2="36"/><line x1="474" y1="36" x2="492" y2="36"/><line x1="580" y1="30" x2="598" y2="20"/><line x1="580" y1="42" x2="598" y2="52"/>
+      </g>
+    </svg>
+    <figcaption><b>Figure 3.</b> Fixes on live projects: the agent cannot change files until the owner approves its written proposal; every change is backed up and can be undone.</figcaption>
+  </figure>
+
+  <h3>At every approval gate the owner chooses</h3>
+  <div class="grid3">
+    <div class="card"><span class="tag" style="background:var(--green-soft);color:var(--green)">Approve</span><h4>Move to the next phase</h4>
+      <p>The phase is marked done, documents are exported to PDF and the next agent starts with the handoff.</p></div>
+    <div class="card"><span class="tag" style="background:var(--blue-soft);color:var(--blue)">Feedback</span><h4>Same agent continues</h4>
+      <p>Answers or corrections go back into the agent's own session, so nothing is lost or re-explained.</p></div>
+    <div class="card"><span class="tag" style="background:var(--soft);color:var(--muted)">Stop</span><h4>Pause and resume later</h4>
+      <p>State is saved per project; the pipeline restarts from any phase with a single command.</p></div>
+  </div>
+
+  <div class="run-foot"><span>Prepared by AI Engineer</span><span>3 / 5</span></div>
+</section>
+
+<!-- ============================================================ PAGE 4 — TRELLO -->
+<section class="page">
+  <div class="run-head"><span>AUTONOMOUS AI SOFTWARE TEAM</span><span>Trello integration</span></div>
+
+  <h2><span class="num">04</span>Agent ⇄ Trello Communication</h2>
+  <div class="rule"></div>
+  <p>The team has its own Trello member account. Mentioning it in a card comment or description is the only trigger: the
+    bridge reads the whole card (description, checklists, attachments, comment history), decides which agent should act,
+    runs it and replies on the card, mentioning the person who asked.</p>
+
+  <figure>
+    <svg viewBox="0 0 700 318" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial">
+      <defs><marker id="s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#334155"/></marker>
+        <marker id="sg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#15803d"/></marker></defs>
+      <!-- lifelines -->
+      <g font-size="10.5" font-weight="700" text-anchor="middle">
+        <rect x="8" y="4" width="92" height="30" rx="6" fill="#0f172a"/><text x="54" y="23" fill="#fff">Owner</text>
+        <rect x="128" y="4" width="92" height="30" rx="6" fill="#0079bf"/><text x="174" y="23" fill="#fff">Trello</text>
+        <rect x="248" y="4" width="92" height="30" rx="6" fill="#475569"/><text x="294" y="23" fill="#fff">HTTPS tunnel</text>
+        <rect x="368" y="4" width="92" height="30" rx="6" fill="#1d4ed8"/><text x="414" y="23" fill="#fff">Bridge</text>
+        <rect x="488" y="4" width="92" height="30" rx="6" fill="#6d28d9"/><text x="534" y="23" fill="#fff">Intent router</text>
+        <rect x="604" y="4" width="92" height="30" rx="6" fill="#0f766e"/><text x="650" y="23" fill="#fff">Agent</text>
+      </g>
+      <g stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="3 3">
+        <line x1="54" y1="34" x2="54" y2="312"/><line x1="174" y1="34" x2="174" y2="312"/><line x1="294" y1="34" x2="294" y2="312"/>
+        <line x1="414" y1="34" x2="414" y2="312"/><line x1="534" y1="34" x2="534" y2="312"/><line x1="650" y1="34" x2="650" y2="312"/>
+      </g>
+      <!-- activation bars -->
+      <rect x="409" y="96" width="10" height="200" fill="#dbeafe" stroke="#1d4ed8"/>
+      <rect x="645" y="190" width="10" height="44" fill="#ccfbf1" stroke="#0f766e"/>
+      <!-- white plates so labels never sit on top of lifelines -->
+      <rect x="548" y="217" width="92" height="12" fill="#fff"/>
+      <rect x="186" y="248" width="214" height="13" fill="#fff"/>
+      <g font-size="9.6" fill="#0f172a">
+        <line x1="54" y1="58" x2="172" y2="58" stroke="#334155" stroke-width="1.4" marker-end="url(#s)"/>
+        <text x="60" y="53">1  "@agent dev, then qa"</text>
+        <line x1="174" y1="82" x2="292" y2="82" stroke="#334155" stroke-width="1.4" marker-end="url(#s)"/>
+        <text x="180" y="77">2  webhook POST</text>
+        <line x1="294" y1="100" x2="408" y2="100" stroke="#334155" stroke-width="1.4" marker-end="url(#s)"/>
+        <text x="300" y="95">3  forward to localhost</text>
+        <rect x="424" y="108" width="160" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1"/>
+        <text x="431" y="123" font-size="8.8">4  verify HMAC signature,</text>
+        <text x="431" y="138" font-size="8.8">drop duplicates · ack 200</text>
+        <line x1="419" y1="166" x2="532" y2="166" stroke="#334155" stroke-width="1.4" marker-end="url(#s)"/>
+        <text x="424" y="161">5  which agent?</text>
+        <line x1="534" y1="182" x2="421" y2="182" stroke="#334155" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#s)"/>
+        <text x="440" y="178" font-size="8.8" fill="#6d28d9">[development, qa]</text>
+        <line x1="419" y1="200" x2="644" y2="200" stroke="#334155" stroke-width="1.4" marker-end="url(#s)"/>
+        <text x="424" y="196">6  run with card context + rules</text>
+        <line x1="645" y1="230" x2="421" y2="230" stroke="#334155" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#s)"/>
+        <text x="552" y="226" font-size="8.8">summary · files · bugs</text>
+        <line x1="409" y1="262" x2="176" y2="262" stroke="#15803d" stroke-width="1.6" marker-end="url(#sg)"/>
+        <text x="190" y="257" fill="#15803d" font-weight="600">7  comment @owner · bug cards · move card</text>
+        <line x1="174" y1="290" x2="56" y2="290" stroke="#15803d" stroke-width="1.4" marker-end="url(#sg)"/>
+        <text x="62" y="285" fill="#15803d">8  notification</text>
+      </g>
+    </svg>
+    <figcaption><b>Figure 4.</b> Mention-driven request flow. The webhook is acknowledged immediately; agents run in a
+      single background queue so cards are processed one at a time, in order.</figcaption>
+  </figure>
+
+  <div class="grid2">
+    <div>
+      <h3 style="margin-top:0">Intent routing</h3>
+      <ul class="tight">
+        <li><b>Keywords first</b> (English and Roman Urdu): <code>requirements</code>, <code>dev</code>/<code>fix</code>, <code>qa</code>/<code>test</code>, <code>docs</code>, in the order written. Several agents can be chained in one comment.</li>
+        <li><b>Small model fallback</b>: if no agent is named, a lightweight model classifies the request.</li>
+        <li><b>Follow-ups</b> without an agent name resume the session of the last agent on that card.</li>
+        <li><b>Undo</b> restores the backup from the last development run.</li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="margin-top:0">Security &amp; reliability</h3>
+      <ul class="tight">
+        <li>HMAC-SHA1 signature check on every webhook; invalid requests get 401.</li>
+        <li>Each Trello action is processed once, even if Trello retries the delivery.</li>
+        <li>The agent ignores its own comments and edits, which prevents feedback loops.</li>
+        <li>Credentials stay in a local environment file and are sent only in request headers.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Example: one card, end to end</h3>
+  <div class="thread">
+    <div class="bar">Card · Add due dates to tasks</div>
+    <div class="msg"><div class="av" style="background:#0f172a">PO</div><div><div class="who">Product owner<span>comment</span></div>
+      <div class="txt"><span class="mention">@ai-agent</span> dev, then qa: every task needs an optional due date, overdue tasks shown in red.</div></div></div>
+    <div class="msg"><div class="av" style="background:#1d4ed8">AI</div><div><div class="who">AI Agent<span>Developer · card moved to Doing</span></div>
+      <div class="txt">Added <code>due_date</code> column, form field and overdue styling (FR-8). 4 files changed, tests pass. Reply <code>undo</code> to roll back.</div></div></div>
+    <div class="msg"><div class="av" style="background:#0f766e">AI</div><div><div class="who">AI Agent<span>QA Engineer · card moved to Completed</span></div>
+      <div class="txt">QA: No bugs found.</div></div></div>
+  </div>
+
+  <div class="run-foot"><span>Prepared by AI Engineer</span><span>4 / 5</span></div>
+</section>
+
+<!-- ============================================================ PAGE 5 — CARD LIFECYCLE + DOCS + STACK -->
+<section class="page">
+  <div class="run-head"><span>AUTONOMOUS AI SOFTWARE TEAM</span><span>Lifecycle &amp; documentation</span></div>
+
+  <h2><span class="num">05</span>Card Lifecycle on the Board</h2>
+  <div class="rule"></div>
+  <figure>
+    <svg viewBox="0 0 700 172" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial">
+      <defs><marker id="l" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#334155"/></marker></defs>
+      <!-- columns -->
+      <g font-size="11" font-weight="700" fill="#0f172a">
+        <rect x="6" y="6" width="210" height="160" rx="9" fill="#f1f5f9"/><text x="20" y="26">To Do</text>
+        <rect x="245" y="6" width="210" height="160" rx="9" fill="#f1f5f9"/><text x="259" y="26">Doing</text>
+        <rect x="484" y="6" width="210" height="160" rx="9" fill="#f1f5f9"/><text x="498" y="26">Completed</text>
+      </g>
+      <!-- cards -->
+      <g font-size="9.5">
+        <rect x="20" y="38" width="182" height="44" rx="6" fill="#fff" stroke="#cbd5e1"/>
+        <text x="30" y="56" font-weight="600" fill="#0f172a">Add due dates to tasks</text><text x="30" y="72" fill="#1d4ed8">@agent dev, then qa</text>
+        <rect x="259" y="38" width="182" height="44" rx="6" fill="#fff" stroke="#1d4ed8" stroke-width="1.5"/>
+        <text x="269" y="56" font-weight="600" fill="#0f172a">Add due dates to tasks</text><text x="269" y="72" fill="#64748b">developer working…</text>
+        <rect x="498" y="38" width="182" height="44" rx="6" fill="#fff" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="508" y="56" font-weight="600" fill="#0f172a">Add due dates to tasks</text><text x="508" y="72" fill="#15803d">QA: No bugs found.</text>
+        <rect x="20" y="108" width="182" height="46" rx="6" fill="#fff" stroke="#ef4444" stroke-width="1.5"/>
+        <rect x="20" y="108" width="40" height="6" rx="2" fill="#ef4444"/>
+        <text x="30" y="128" font-weight="600" fill="#0f172a">[BUG-1] Empty title accepted</text><text x="30" y="144" fill="#b91c1c">created by QA · waits for owner</text>
+      </g>
+      <g stroke="#334155" stroke-width="1.5" fill="none">
+        <line x1="202" y1="60" x2="257" y2="60" marker-end="url(#l)"/>
+        <line x1="441" y1="60" x2="496" y2="60" marker-end="url(#l)"/>
+        <path d="M350 82 C350 132 260 131 204 131" stroke="#b91c1c" stroke-dasharray="5 3" marker-end="url(#l)"/>
+      </g>
+      <g font-size="8.8" font-weight="600" text-anchor="middle">
+        <text x="229" y="98" fill="#1d4ed8">dev starts</text>
+        <text x="468" y="98" fill="#15803d">QA passes</text>
+        <text x="350" y="150" fill="#b91c1c">QA finds bugs → one card per bug</text>
+      </g>
+    </svg>
+    <figcaption><b>Figure 5.</b> Cards move automatically: to <i>Doing</i> when development starts and to <i>Completed</i> when
+      QA finds no bugs. Bugs become red cards; a fix starts only when the owner mentions the agent on them.</figcaption>
+  </figure>
+
+  <h2 style="margin-top:4mm"><span class="num">06</span>Professional Documentation Output</h2>
+  <div class="rule"></div>
+  <figure>
+    <svg viewBox="0 0 700 64" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial" font-size="10">
+      <defs><marker id="d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>
+      <g text-anchor="middle" font-weight="600">
+        <rect x="2" y="10" width="118" height="44" rx="7" fill="#ede9fe" stroke="#a78bfa"/><text x="61" y="29" fill="#4c1d95">Agent Markdown</text><text x="61" y="44" font-size="8.5" font-weight="400" fill="#6d28d9">BRD · SRS · guides</text>
+        <rect x="146" y="10" width="118" height="44" rx="7" fill="#f1f5f9" stroke="#cbd5e1"/><text x="205" y="29" fill="#0f172a">Normalise</text><text x="205" y="44" font-size="8.5" font-weight="400" fill="#64748b">tables · lists</text>
+        <rect x="290" y="10" width="118" height="44" rx="7" fill="#f1f5f9" stroke="#cbd5e1"/><text x="349" y="29" fill="#0f172a">Styled HTML</text><text x="349" y="44" font-size="8.5" font-weight="400" fill="#64748b">cover · diagrams</text>
+        <rect x="434" y="10" width="118" height="44" rx="7" fill="#f1f5f9" stroke="#cbd5e1"/><text x="493" y="29" fill="#0f172a">Headless browser</text><text x="493" y="44" font-size="8.5" font-weight="400" fill="#64748b">print to A4</text>
+        <rect x="578" y="10" width="118" height="44" rx="7" fill="#b45309"/><text x="637" y="29" fill="#fff">PDF + archive</text><text x="637" y="44" font-size="8.5" font-weight="400" fill="#fef3c7">one file per version</text>
+      </g>
+      <g stroke="#475569" stroke-width="1.3" marker-end="url(#d)"><line x1="120" y1="32" x2="144" y2="32"/><line x1="264" y1="32" x2="288" y2="32"/><line x1="408" y1="32" x2="432" y2="32"/><line x1="552" y1="32" x2="576" y2="32"/></g>
+    </svg>
+  </figure>
+  <p>Every client document gets a cover page, running headers, page numbers and a closing <b>Document Version History</b>
+    table (Version 1, 2, 3 …). Requirement changes never overwrite history: the previous SRS is frozen, a change-log entry
+    records what was added, changed or removed, and affected agents are notified.</p>
+
+  <h2 style="margin-top:4mm"><span class="num">07</span>Technology &amp; Outcomes</h2>
+  <div class="rule"></div>
+  <div class="grid2">
+    <table style="margin:0">
+      <tr><th>Layer</th><th>Technology</th></tr>
+      <tr><td><b>Agent runtime</b></td><td>Claude Code (headless sessions), role prompts</td></tr>
+      <tr><td><b>Orchestration</b></td><td>Python 3 standard library</td></tr>
+      <tr><td><b>Integration</b></td><td>Trello REST API + webhooks, HTTPS tunnel</td></tr>
+      <tr><td><b>Documents</b></td><td>Markdown → HTML/CSS → PDF, Mermaid diagrams</td></tr>
+      <tr><td><b>Target stack</b></td><td>PHP / Laravel, MySQL, any web root</td></tr>
+    </table>
+    <div>
+      <ul class="tight" style="margin-top:1mm">
+        <li><b>Faster delivery:</b> one request covers spec, code, tests and documentation.</li>
+        <li><b>Safe by design:</b> isolated agents, approval gates, backups and one-step undo.</li>
+        <li><b>Works where the team works:</b> requests and results live on the Trello card.</li>
+        <li><b>Legacy-ready:</b> existing codebases are documented as-is before any change.</li>
+        <li><b>Server-ready:</b> the same scripts run behind a reverse proxy without the tunnel.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="closing">
+    <h3>About this project</h3>
+    <p>Designed and built end to end: agent roles and guardrails, the orchestration layer, permission sandboxing,
+      the rules system, the Markdown-to-PDF publishing pipeline and the webhook-based Trello bridge with intent routing.
+      The same setup runs on a local development machine and moves to a server without code changes.</p>
+  </div>
+
+  <div class="run-foot"><span>Prepared by AI Engineer</span><span>5 / 5</span></div>
+</section>
+
+</body>
+</html>

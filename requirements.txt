@@ -1,0 +1,2 @@
+# team.py itself only needs the standard library + Claude Code CLI.
+markdown>=3.5   # PDF export of BRD / SRS / docs (pdf_export.py, uses Edge or Chrome to print)
