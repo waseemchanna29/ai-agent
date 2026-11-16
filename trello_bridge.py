@@ -246,7 +246,9 @@ ROLE_TASK = {
                      "after v1' (new version + CHANGELOG + Document Version History). If information is "
                      "missing, ask your questions in your final answer — the owner replies on the card."),
     "development": ("Implement / fix what this card asks, following the latest REQUIREMENTS.md and the "
-                    "project rules. Run the relevant tests. Update DEV_NOTES.md and write a handoff to QA."),
+                    "project rules. Run the relevant tests. Update DEV_NOTES.md and write a handoff to QA. "
+                    "Your final answer is posted as the card comment: ONE line, '<task> fixed.' or "
+                    "'<task> implemented.' — no logs, file lists or test output."),
     "qa": ("Test what this card asks against the acceptance criteria and run a regression check of existing "
            "tests. Write the QA report (READY / NOT READY, bugs with file:line). Do not change application code."),
     "docs": ("Update the documentation affected by this card and add one row to each changed document's "
@@ -359,9 +361,42 @@ def move_card(card: dict, card_id: str, list_name: str) -> str:
         return f" (Could not move the card to {list_name}.)"
 
 
-def read_card(card_id: str) -> tuple[dict, str]:
+MAX_ATTACHMENT = 20 * 1024 * 1024  # skip uploads bigger than 20 MB
+
+
+def fetch_attachments(card_id: str, attachments: list, dest: Path) -> list[str]:
+    """Download the card's uploaded files (screenshots etc.) with the agent account's auth, because
+    Trello upload URLs need it and the agents can't open them. Returns one line per attachment."""
+    lines = []
+    for a in attachments:
+        if not a.get("isUpload"):  # a plain link, not a Trello-hosted file
+            lines.append(f"- {a['name']}: {a['url']}")
+            continue
+        fname = re.sub(r'[<>:"/\\|?*]+', "_", a.get("fileName") or a["name"]) or "file"
+        local = dest / f"{a['id'][-6:]}-{fname}"
+        try:
+            if not local.exists():
+                if (a.get("bytes") or 0) > MAX_ATTACHMENT:
+                    raise RuntimeError("too large")
+                url = f"{API}/cards/{card_id}/attachments/{a['id']}/download/{urllib.parse.quote(fname)}"
+                req = urllib.request.Request(url, headers={
+                    "Authorization": f'OAuth oauth_consumer_key="{KEY}", oauth_token="{TOKEN}"'})
+                with urllib.request.urlopen(req, timeout=60) as r:
+                    body = r.read(MAX_ATTACHMENT + 1)
+                if len(body) > MAX_ATTACHMENT:
+                    raise RuntimeError("too large")
+                dest.mkdir(parents=True, exist_ok=True)
+                local.write_bytes(body)
+            lines.append(f"- {a['name']}: local copy {local}  (open it with your Read tool — images are shown to you)")
+        except (urllib.error.URLError, OSError, RuntimeError) as e:
+            say(f"  could not download attachment {a['name']}: {e}", "yellow")
+            lines.append(f"- {a['name']}: {a['url']}  (could not be downloaded: {e})")
+    return lines
+
+
+def read_card(card_id: str, proj=None) -> tuple[dict, str]:
     card = api("GET", f"/cards/{card_id}", fields="name,desc,url,idList,idBoard", checklists="all",
-               attachments="true", attachment_fields="name,url")
+               attachments="true", attachment_fields="name,url,isUpload,fileName,bytes,mimeType")
     bot_id = me()["id"]
     acts = api("GET", f"/cards/{card_id}/actions", filter="commentCard", limit=50)
     lines = [f"Trello card: \"{card['name']}\" ({card['url']})", "", card.get("desc") or "(no description)"]
@@ -369,7 +404,12 @@ def read_card(card_id: str) -> tuple[dict, str]:
         lines += ["", f"Checklist — {cl['name']}:"]
         lines += [f"- [{'x' if i['state'] == 'complete' else ' '}] {i['name']}" for i in cl.get("checkItems", [])]
     if card.get("attachments"):
-        lines += ["", "Attachments:"] + [f"- {a['name']}: {a['url']}" for a in card["attachments"]]
+        if proj is not None:
+            dest = proj.shared / "trello-attachments" / card_id[-6:]
+            lines += ["", "Attachments (screenshots pasted in the description/comments are here too):"]
+            lines += fetch_attachments(card_id, card["attachments"], dest)
+        else:
+            lines += ["", "Attachments:"] + [f"- {a['name']}: {a['url']}" for a in card["attachments"]]
     conv = [f"- {'AGENT' if a['idMemberCreator'] == bot_id else '@' + a['memberCreator']['username']}: "
             f"{a['data']['text'][:1500]}" for a in reversed(acts)]
     if conv:
@@ -386,16 +426,6 @@ def owner_questions(proj) -> str:
     return "\n\n".join(out)
 
 
-def snapshot(proj, card_id: str) -> str:
-    base = proj.shared / "backups" / f"trello-{card_id[-6:]}-{team.now('%Y%m%d-%H%M%S')}"
-    dest, n = base, 1
-    while dest.exists():  # two runs in the same second
-        n += 1
-        dest = base.with_name(f"{base.name}-{n}")
-    shutil.copytree(proj.code_dir(), dest, ignore=team._ignore)
-    return str(dest)
-
-
 def handle(job: dict) -> None:
     proj = team.need(job["project"])
     card_id, who, text = job["card"], job["by"], job["text"]
@@ -404,16 +434,11 @@ def handle(job: dict) -> None:
     save_state(st)
 
     if UNDO.search(text) and not roles_from_words(text):
-        b = cst.get("backup")
-        if b and Path(b).exists():
-            team.restore(proj.code_dir(), Path(b))
-            comment(card_id, f"Undo complete — the code is back to how it was before the last development "
-                             f"run on this card (backup `{Path(b).name}`).", who)
-        else:
-            comment(card_id, "Nothing to undo — no development has run on this card yet.", who)
+        comment(card_id, "Undo is off — no code backups are kept. Ask the developer to revert instead "
+                         "(e.g. `@me dev revert the last change`).", who)
         return
 
-    card, card_text = read_card(card_id)
+    card, card_text = read_card(card_id, proj)
     roles = roles_from_words(text) or roles_from_model(text, card_text)
     if not roles and cst.get("last_role"):
         roles = [cst["last_role"]]  # plain reply → feedback to whoever worked last
@@ -431,10 +456,11 @@ def handle(job: dict) -> None:
         feedback = session is not None and i == 0 and cst.get("last_role") == role
         if role == "development" and DEV_TO_DOING:
             move_card(card, card_id, DOING_LIST)  # silent: the console logs it if the list is missing
-        if role == "development" and not feedback:
-            cst["backup"] = snapshot(proj, card_id)
         if feedback:
             prompt = f"New message from @{who} on the Trello card:\n{text}\n\nContinue your work on this card accordingly."
+            att = card_text.split("\nAttachments", 1)
+            if len(att) == 2:  # attachments may have been added since your last run
+                prompt += "\n\nAttachments" + att[1].split("\n\nComments (oldest first):", 1)[0]
         else:
             prompt = (team.context_block(proj, role) + f"\nTask from Trello (requested by @{who}):\n"
                       f"Their message: {text}\n\n{card_text}\n\nYour part: {ROLE_TASK[role]}")
@@ -446,6 +472,7 @@ def handle(job: dict) -> None:
         proj.board(f"{role}: started from Trello card {card['name']!r} (@{who})")
 
         run_started = time.time()
+        before = team.fingerprint(proj.code_dir()) if role == "development" else None
         summary, session, ok = team.run_claude(proj, role, prompt, session)
         st = load_state()
         cst = st["cards"][card_id]
@@ -469,22 +496,25 @@ def handle(job: dict) -> None:
             proj.board(f"qa: finished Trello card {card['name']!r} — {len(filed)} bug(s)")
             continue
 
-        parts = [f"**{team.TITLES[role]}** finished.\n\n{summary}"]
+        dev = before is not None
+        # Development: comment is just the agent's one-line "<task> fixed/implemented" — no logs or file lists.
+        parts = [summary.strip()] if dev else [f"**{team.TITLES[role]}** finished.\n\n{summary}"]
         q = owner_questions(proj)
         if q:
             parts.append(f"**Questions for you** — reply by mentioning me:\n\n{q}")
-        if role == "development" and cst.get("backup"):
-            ch, add, rm = team.diff_against(proj.code_dir(), Path(cst["backup"]))
+        board_note = ""
+        if dev:  # changed files are recorded in board.md, not in the comment
+            ch, add, rm = team.diff_since(proj.code_dir(), before)
             files = [f"M {r}" for r in ch] + [f"A {r}" for r in add] + [f"D {r}" for r in rm]
-            parts.append("**Files changed:**\n" + ("\n".join(files[:60]) or "(none)")
-                         + "\n\nMention me with `undo` to restore the code as it was before this run.")
+            board_note = f" — files: {', '.join(files[:60]) or 'none'}"
         if role in team.PDF_SOURCES:
             team.export_pdfs(proj, role)
-            parts.append("PDFs updated.")
-        if i == len(roles) - 1:
+            if not dev:
+                parts.append("PDFs updated.")
+        if i == len(roles) - 1 and not dev:
             parts.append("Mention me with feedback to continue, or name the next agent (e.g. `qa karo`).")
         comment(card_id, "\n\n".join(parts), who)
-        proj.board(f"{role}: finished Trello card {card['name']!r}")
+        proj.board(f"{role}: finished Trello card {card['name']!r}{board_note}")
         if q:
             return  # wait for the owner's answers before running the next agent
 

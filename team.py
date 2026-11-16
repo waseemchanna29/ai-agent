@@ -10,7 +10,7 @@
     python team.py rules <project>              open the project's own RULES.md
     python team.py adopt <folder|path>          register existing code; requirements agent writes BRD + SRS
     python team.py rule "<text>" [-p project] [--for development]   add a rule once (global or per project)
-    python team.py dev <project|folder|path> "<issue>"   test -> proposal -> your OK -> fix (backup/undo)
+    python team.py dev <project|folder|path> "<issue>"   test -> proposal -> your OK -> fix (no backups; changes go in the md report)
     python team.py status [project]
 
 New projects keep their code in C:\\xampp\\htdocs\\<project> (TEAM_CODE_ROOT) by default.
@@ -18,6 +18,7 @@ New projects keep their code in C:\\xampp\\htdocs\\<project> (TEAM_CODE_ROOT) by
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -654,7 +655,7 @@ def fix_loop(proj: Project, rounds: int) -> None:
 
 
 # ------------------------------------------------------------------ dev: investigate -> approve -> fix
-BACKUP_IGNORE = {".git", "node_modules", "vendor", "__pycache__", ".pytest_cache", ".venv", "venv",
+SCAN_IGNORE = {".git", "node_modules", "vendor", "__pycache__", ".pytest_cache", ".venv", "venv",
                  ".idea", ".vscode", "storage", "cache", ".next", "dist", "build"}
 
 
@@ -683,34 +684,26 @@ def find_or_register(target: str) -> Project:
     return proj
 
 
-def _ignore(_dir, names):
-    return [n for n in names if n in BACKUP_IGNORE]
+def fingerprint(root: Path) -> dict[str, str]:
+    """In-memory {relative path: sha1} of the code folder. Nothing is copied to disk."""
+    out = {}
+    for p in root.rglob("*"):
+        rel = p.relative_to(root)
+        if p.is_file() and not any(part in SCAN_IGNORE for part in rel.parts):
+            try:
+                out[rel.as_posix()] = hashlib.sha1(p.read_bytes()).hexdigest()
+            except OSError:
+                pass
+    return out
 
 
-def diff_against(code: Path, backup: Path) -> tuple[list[str], list[str], list[str]]:
-    """(changed, added, deleted) relative paths, ignoring BACKUP_IGNORE folders."""
-    def files(root: Path) -> dict[str, Path]:
-        out = {}
-        for p in root.rglob("*"):
-            rel = p.relative_to(root)
-            if p.is_file() and not any(part in BACKUP_IGNORE for part in rel.parts):
-                out[rel.as_posix()] = p
-        return out
-    now_f, old_f = files(code), files(backup)
-    changed = [r for r in now_f if r in old_f and now_f[r].read_bytes() != old_f[r].read_bytes()]
-    added = [r for r in now_f if r not in old_f]
-    deleted = [r for r in old_f if r not in now_f]
+def diff_since(code: Path, before: dict[str, str]) -> tuple[list[str], list[str], list[str]]:
+    """(changed, added, deleted) relative paths compared with an earlier fingerprint()."""
+    now_f = fingerprint(code)
+    changed = [r for r in now_f if r in before and now_f[r] != before[r]]
+    added = [r for r in now_f if r not in before]
+    deleted = [r for r in before if r not in now_f]
     return sorted(changed), sorted(added), sorted(deleted)
-
-
-def restore(code: Path, backup: Path) -> None:
-    changed, added, deleted = diff_against(code, backup)
-    for r in changed + deleted:
-        (code / r).parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(backup / r, code / r)
-    for r in added:
-        (code / r).unlink()
-    say(f"Restored {len(changed) + len(deleted)} file(s), removed {len(added)} new file(s).", "green")
 
 
 def dev_fix(proj: Project, issue: str) -> None:
@@ -764,18 +757,16 @@ If you find no problem, say so in the report and explain what you checked."""
             f"Owner feedback on your proposal:\n{fb}\n\nInvestigate further if needed and rewrite {report}. "
             "Still do NOT modify project files.", session, read_only_code=True)
 
-    # Step 2 - backup, then apply.
-    backup = proj.shared / "backups" / stamp
-    say(f"Backing up {code} -> {backup} ...", "dim")
-    shutil.copytree(code, backup, ignore=_ignore)
-    proj.board(f"development: applying approved fix ({report.name}), backup {backup.name}")
+    # Step 2 - apply (no backup copy; changes are recorded in the report and board).
+    before = fingerprint(code)
+    proj.board(f"development: applying approved fix ({report.name})")
     apply_prompt = (f"The owner APPROVED your proposal in {report}. Now apply exactly those changes in "
                     f"{code}. Then run the verification you described. Append a section "
                     "`## Result` to the report: files changed, test commands + output, and anything you "
                     "could not verify. If you need to go beyond the approved change, stop and explain instead.")
     while True:
         summary, session, ok = run_claude(proj, "development", apply_prompt, session)
-        changed, added, deleted = diff_against(code, backup)
+        changed, added, deleted = diff_since(code, before)
         say("\nFiles changed in the project:", "bold")
         for r in changed:
             say(f"  M {r}", "yellow")
@@ -785,14 +776,11 @@ If you find no problem, say so in the report and explain what you checked."""
             say(f"  D {r}", "red")
         if not (changed or added or deleted):
             say("  (none)", "dim")
-        choice = ask("  [a] accept   [f] more changes   [u] undo everything (restore backup)", "afu", "a")
+        choice = ask("  [a] accept   [f] more changes", "af", "a")
         if choice == "a":
-            proj.board(f"development: fix accepted ({report.name})")
-            say(f"Done. Report: {report}\nBackup kept at: {backup}", "green")
-            return
-        if choice == "u":
-            restore(code, backup)
-            proj.board(f"development: fix undone ({report.name})")
+            n = len(changed) + len(added) + len(deleted)
+            proj.board(f"development: fix accepted ({report.name}) — {n} file(s) changed")
+            say(f"Done. Report: {report}", "green")
             return
         fb = read_multiline("  What else should change? (empty line to send):")
         apply_prompt = (f"Owner feedback after your fix:\n{fb}\n\n"

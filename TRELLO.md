@@ -9,12 +9,12 @@ Agents (`agents/`) aur `team.py` me koi tabdeeli nahi hui. Sab kaam `trello_brid
 | Aap card pe likhte hain | Kya hota hai |
 |---|---|
 | `@aiagent is card ki requirements likho` | Requirements agent BRD/SRS update karta hai. Sawal hon to comment me poochta hai |
-| `@aiagent dev karo` | Developer code likhta hai (pehle backup banta hai) aur badli hui files ki list deta hai |
+| `@aiagent dev karo` | Developer code likhta hai aur badli hui files ki list deta hai (koi backup nahi banta) |
 | `@aiagent dev karo phir qa karo` | Developer, phir QA, isi tarteeb se |
 | `@aiagent test karo` | QA report: READY / NOT READY, bugs ke saath |
 | `@aiagent docs update karo` | Docs update hote hain aur PDFs ban jati hain |
 | `@aiagent footer bold kar do` *(agent ka naam nahi)* | Jis agent ne is card pe aakhri kaam kiya, wahi isay feedback samajh ke aage chalta hai |
-| `@aiagent undo` | Aakhri dev run se pehle wala code wapas aa jata hai |
+| `@aiagent undo` | Band hai — backups nahi rakhe jaate; developer se revert karwayein |
 | Card ki description me `@aiagent ...` likh dena | Comment jaisa hi kaam karta hai |
 
 **Agent kaise chuna jata hai:**
@@ -43,7 +43,7 @@ Jab Trello se QA chalta hai aur bugs nikalte hain:
    ```
    @aiagent01 dev fix karo
    ```
-   Fix backup aur `undo` ke saath hota hai.
+   Fix ke baad sirf md files (report, board) update hoti hain — koi backup nahi.
 4. Fix ke baad usi card pe `@aiagent01 qa` likh kar dobara test karwayein.
 5. **Duplicate nahi banta:** dobara QA me wahi bug aaye, chahe number badal jaye, to naya card nahi banta. Comment me purane card ka link "(still open)" ke saath aata hai.
 

@@ -33,3 +33,7 @@
 - 2026-11-16 14:27 qa: started from Trello card 'QA' (@waseemiqbal21)
 - 2026-11-16 14:27 qa: NOT READY (v3) — BUG-3 fixed & verified; FR-12 & FR-13 NOT implemented (no code change since v3). 2 open bugs: BUG-1 IDOR/FR-12 (high), BUG-2 no throttle on GET form route/FR-13 (med). QA suite 35 pass / 2 fail (by design). Handoff 07 to development.
 - 2026-11-16 14:29 qa: finished Trello card 'QA' — 2 bug(s)
+- 2026-11-16 14:34 development: started from Trello card 'UI Fix' (@waseemiqbal21)
+- 2026-11-16 development: DONE — UI Fix: aligned '+ Add task' button with the task dropdown on the worklog form (resources/views/worklog/create.blade.php). Row + inline add-task row set to items-stretch; select/buttons fixed h-10; button whitespace-nowrap + shrink-0 so it never wraps/misaligns. Views compile; `php artisan test` green (1 passed). Branch fix/ui-add-task-alignment pushed. (Out of scope here: BUG-1/FR-12 & BUG-2/FR-13 from handoff 07 — separate cards.)
+- 2026-11-16 development: PR INTENT — request approval to open PR for `fix/ui-add-task-alignment` → base `main` (no dev/staging branch exists). Title: "fix: align +Add task button with task dropdown on worklog form". Awaiting board/owner OK.
+- 2026-11-16 14:44 development: finished Trello card 'UI Fix'

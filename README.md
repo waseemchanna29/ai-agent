@@ -100,8 +100,8 @@ python team.py dev myshop "Checkout page pe total galat aa raha hai, discount do
 
 1. **Jaanch:** Developer code parhta hai aur tests, `php -l` ya `curl http://localhost/myshop/` chalata hai. Is step me woh project ki koi file **nahi badal sakta**. Phir `shared/projects/myshop/fixes/<time>-fix.md` me proposal likhta hai: masla, kaise test kiya, root cause (file:line), kya badlega, risk aur verify kaise karega.
 2. **Aap ka faisla:** `a` approve, `f` "aise nahi, aise karo", ya `s` chhod do (kuch nahi badlega).
-3. **Fix:** Approve karne pe pehle project ka **backup** `shared/projects/myshop/backups/<time>/` me banta hai. Phir agent usi project folder me fix lagata hai, dobara test karta hai, aur report me `## Result` likhta hai.
-4. **Aakhri check:** Badli hui files ki list dikhti hai (M/A/D). Phir `a` accept karein, `f` aur badlaav maangein, ya `u` se **undo** karein, jo backup wapas laga deta hai.
+3. **Fix:** Approve karne pe agent (bina backup ke) usi project folder me fix lagata hai, dobara test karta hai, aur report me `## Result` likhta hai.
+4. **Aakhri check:** Badli hui files ki list dikhti hai (M/A/D). Phir `a` accept karein, ya `f` aur badlaav maangein. Koi backup/undo nahi — tabdeeliyan sirf report aur `board.md` me likhi jaati hain.
 
 ### PDF documents + version history
 Requirements phase (BRD, SRS) aur docs phase (User Guide, API, Architecture, Deployment, Changelog) approve hote hi **PDF khud ban jati hai**:
@@ -222,7 +222,7 @@ python team.py status
 | `rule "<text>" [-p p] [--for role]` | ek rule add karo (default: sab projects) |
 | `adopt <folder>` | existing project register karo + BRD/SRS banwao |
 | `pdf <project>` | BRD, SRS aur saare docs ki PDFs dobara banao |
-| `dev` | kisi bhi project me developer jaanch kare → proposal → aap approve karein → fix (backup + undo ke saath) |
+| `dev` | kisi bhi project me developer jaanch kare → proposal → aap approve karein → fix (sirf md report update, koi backup nahi) |
 
 Har phase ke baad approval gate: `a` approve, `f` feedback ya sawalon ke jawab (agent apni hi session me aage chalta hai), `s` stop.
 
