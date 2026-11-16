@@ -23,3 +23,5 @@
 - 2026-11-16 12:02 requirements: DONE — BUG-1 card: owner decision captured. REQUIREMENTS v2 (FR-12 new; FR-3/FR-4 changed; §9 1-2), BRD v2, CHANGELOG v2, decisions.md. Public non-rotating UUID = by design; IDOR still fixed (bind submission to UUID owner). Handoff 04 + dev/qa inboxes.
 - 2026-11-16 12:06 requirements: finished Trello card '[BUG-1] Unauthenticated submission identity (IDOR) on POST /worklogs and /tasks'
 - 2026-11-16 12:06 requirements: started from Trello card '[BUG-2] GET /worklog/{uuid} has no rate limit and the UUID never expires/rotates' (@waseemiqbal21)
+- 2026-11-16 12:06 requirements: DONE — BUG-2 card: owner confirmed worklog/{uuid} is a public per-employee, permanent URL. UUID rotation/expiry stays declined; throttle half resolved. REQUIREMENTS v3 (FR-13 new; FR-1/§4/§7/§9-2 changed), CHANGELOG v3, decisions.md. Handoff 05 + dev inbox: add throttle:30,1 to GET route, do NOT change URL/add login.
+- 2026-11-16 12:09 requirements: finished Trello card '[BUG-2] GET /worklog/{uuid} has no rate limit and the UUID never expires/rotates'
