@@ -58,8 +58,10 @@ class TaskQuickStoreTest extends TestCase
 
     public function test_quick_store_validates_required_fields(): void
     {
+        // project_id and title are required in every version. (Under FR-4 v3 user_id should be
+        // ignored and resolved from the UUID, so it is intentionally not asserted here.)
         $this->postJson('/tasks', [])
             ->assertStatus(422)
-            ->assertJsonValidationErrors(['project_id', 'title', 'user_id']);
+            ->assertJsonValidationErrors(['project_id', 'title']);
     }
 }

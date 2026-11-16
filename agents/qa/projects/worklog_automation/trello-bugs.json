@@ -1,0 +1,16 @@
+[
+  {
+    "id": "BUG-1",
+    "title": "FR-12 not implemented: POST /worklogs & /tasks still trust body user_id (IDOR)",
+    "severity": "high",
+    "file": "app/Http/Controllers/WorklogController.php:45",
+    "details": "Requirements v3 FR-12 requires the acting user to be resolved from the UUID and any client-supplied user_id to be ignored (bound to the UUID owner) or rejected (403). The code is unchanged: WorklogController.php:45 writes user_id => $data['user_id']; StoreWorklogRequest.php:18 still has 'user_id' => required|exists:users,id; TaskController.php:26 sets created_by/updated_by from the body user_id. Steps: POST /worklogs with another user's user_id -> 201 and worklog rows are created for that victim; no UUID is required or checked at submit time. Expected: never create rows for a user other than the UUID owner. Actual: rows created for the body-supplied user. Verified by test_submission_must_not_write_for_a_foreign_user (fails)."
+  },
+  {
+    "id": "BUG-2",
+    "title": "FR-13 not implemented: GET /worklog/{uuid} is not throttled",
+    "severity": "medium",
+    "file": "routes/web.php:12",
+    "details": "Requirements v3 FR-13 requires GET /worklog/{uuid} to be rate-limited (suggested throttle:30,1 per IP), applied to both valid and 404 responses, returning 429 beyond the limit; URL unchanged, no login, no UUID rotation. The route at routes/web.php:12 has no throttle middleware (only the POSTs and login are throttled). Steps: request GET /worklog/{uuid} repeatedly -> every request returns 200/404, never 429. Expected: 429 after the limit. Actual: unlimited requests permitted. Verified by test_form_route_is_rate_limited (fails). Note: FR-13 allows the owner to veto the throttle on the BUG-2 card; no veto is recorded, so it stands."
+  }
+]

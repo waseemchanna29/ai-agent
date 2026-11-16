@@ -30,3 +30,6 @@
 - 2026-11-16 development: PR INTENT — request approval to open PR for `fix/bug-3-scaffold-test-404` → base `main` (no dev/staging branch exists). Title: "fix: remove invalid scaffold test causing red suite (BUG-3)". Awaiting board/owner OK.
 - 2026-11-16 12:15 development: finished Trello card '[BUG-3] Failing test in shipped suite: GET / returns 404 (no root route)'
 - 2026-11-16 12:28 qa: started from Trello card 'QA' (@waseemiqbal21)
+- 2026-11-16 14:27 qa: started from Trello card 'QA' (@waseemiqbal21)
+- 2026-11-16 14:27 qa: NOT READY (v3) — BUG-3 fixed & verified; FR-12 & FR-13 NOT implemented (no code change since v3). 2 open bugs: BUG-1 IDOR/FR-12 (high), BUG-2 no throttle on GET form route/FR-13 (med). QA suite 35 pass / 2 fail (by design). Handoff 07 to development.
+- 2026-11-16 14:29 qa: finished Trello card 'QA' — 2 bug(s)

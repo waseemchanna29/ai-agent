@@ -1,11 +1,12 @@
 # Test Plan — worklog_automation
 
-Requirements version: **1** (as-is baseline, 2026-11-16). No newer `CHANGELOG.md` entry, so the
-plan covers FR-1 … FR-11 of v1 as written.
+Requirements version: **3** (2026-11-16). v2 added **FR-12** (submission identity bound to the
+UUID — fixes BUG-1 IDOR); v3 added **FR-13** (throttle the public `GET /worklog/{uuid}` route —
+the actionable half of BUG-2). The plan below covers FR-1 … FR-13.
 
-Scope: full-project QA requested by Trello card "QA". The latest development handoff (02) made
-**no functional code change** (only added a `DEV_NOTES.md` doc file on a branch), so this is a
-full baseline verification, not a change-delta review.
+Scope: re-QA requested by Trello card "QA" — "based on current requirements, again qa". Since the
+last run: development fixed **BUG-3** (handoff 06: deleted the scaffold `ExampleTest` + unused
+`welcome.blade.php`), but **FR-12 and FR-13 were not implemented** (no dev handoff for them).
 
 ## Environment
 - App code: `C:\xampp\htdocs\worklog_automation` (Laravel 12, PHP 8.2).
@@ -17,7 +18,9 @@ full baseline verification, not a change-delta review.
 
 | FR | Requirement | Test(s) | File |
 |----|-------------|---------|------|
-| FR-1 | Open form by UUID; 404 on unknown | `test_valid_uuid_renders_form`, `test_unknown_uuid_returns_404` | WorklogFormTest |
+| FR-1 | Open form by UUID; 404 on unknown; route throttled (v3) | `test_valid_uuid_renders_form`, `test_unknown_uuid_returns_404` (+FR-13) | WorklogFormTest |
+| FR-12 | Submission identity bound to UUID; foreign `user_id` never writes for victim | `test_submission_must_not_write_for_a_foreign_user` | WorklogFormTest |
+| FR-13 | `GET /worklog/{uuid}` rate-limited (429 beyond limit) | `test_form_route_is_rate_limited` | FormRouteThrottleTest |
 | FR-2 | Cascading Project For → Project → Task | Client-side (Alpine) — reviewed in `worklog/create.blade.php`; server-side enforced by FR-3 validation (`test_store_rejects_project_not_in_project_for`, `test_store_rejects_task_not_in_project`) | WorklogFormTest |
 | FR-3 | Submit one/more entries with validation, 201 {message,count}, txn | `test_store_valid_worklog`, `test_store_rejects_future_date`, `..._project_not_in_project_for`, `..._task_not_in_project`, `..._hours_out_of_range`, `..._requires_at_least_one_entry` | WorklogFormTest |
 | FR-4 | Inline task create, firstOrCreate dedup, 201 | `test_quick_store_creates_task`, `test_quick_store_dedupes_existing_task`, `test_quick_store_validates_required_fields` | TaskQuickStoreTest |
@@ -37,5 +40,5 @@ full baseline verification, not a change-delta review.
 - Code review for injection/secrets/validation/error handling — see QA report §Review.
 
 ## Regression — developer's own suite
-`php artisan test` → `tests/Unit/ExampleTest` PASS; `tests/Feature/ExampleTest` FAIL
-(asserts `GET /` == 200, but there is no root route → 404). Scaffold leftover.
+`php artisan test` → **OK (1 test)**. The failing `tests/Feature/ExampleTest` (old BUG-3) was
+deleted along with the unused `welcome.blade.php`; the suite is now green.

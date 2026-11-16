@@ -167,21 +167,22 @@ class WorklogFormTest extends TestCase
     }
 
     /**
-     * SECURITY (known issue #1): the endpoint accepts ANY existing user_id from the
-     * body with no link to the UUID that loaded the page. This test documents the
-     * IDOR: an attacker logs hours on behalf of a victim user.
+     * FR-12 (v3): the acting user is resolved from the UUID link; a client-supplied
+     * user_id for a DIFFERENT user must never create rows for that user — it is bound
+     * to the UUID owner or rejected (403). This is the BUG-1 close condition.
+     * Currently FAILS: the controller still writes a worklog for the body user_id.
      */
-    public function test_store_accepts_arbitrary_user_id_idor(): void
+    public function test_submission_must_not_write_for_a_foreign_user(): void
     {
         $victim = $this->makeEmployee(['name' => 'Victim']);
         $pf = $this->makeProjectFor();
         $project = $this->makeProject($pf);
         $task = $this->makeTask($project);
 
-        // No authentication, no UUID ownership check — still succeeds for the victim.
-        $this->postJson('/worklogs', $this->basePayload($victim, $pf, $project, $task))
-            ->assertCreated();
+        // Unbound request carrying the victim's user_id in the body.
+        $this->postJson('/worklogs', $this->basePayload($victim, $pf, $project, $task));
 
-        $this->assertDatabaseHas('worklogs', ['user_id' => $victim->id]);
+        // Core invariant: no hours may be logged against the victim from a foreign request.
+        $this->assertDatabaseMissing('worklogs', ['user_id' => $victim->id]);
     }
 }
