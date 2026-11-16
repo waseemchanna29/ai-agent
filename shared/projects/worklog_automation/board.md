@@ -25,3 +25,8 @@
 - 2026-11-16 12:06 requirements: started from Trello card '[BUG-2] GET /worklog/{uuid} has no rate limit and the UUID never expires/rotates' (@waseemiqbal21)
 - 2026-11-16 12:06 requirements: DONE — BUG-2 card: owner confirmed worklog/{uuid} is a public per-employee, permanent URL. UUID rotation/expiry stays declined; throttle half resolved. REQUIREMENTS v3 (FR-13 new; FR-1/§4/§7/§9-2 changed), CHANGELOG v3, decisions.md. Handoff 05 + dev inbox: add throttle:30,1 to GET route, do NOT change URL/add login.
 - 2026-11-16 12:09 requirements: finished Trello card '[BUG-2] GET /worklog/{uuid} has no rate limit and the UUID never expires/rotates'
+- 2026-11-16 12:13 development: started from Trello card '[BUG-3] Failing test in shipped suite: GET / returns 404 (no root route)' (@waseemiqbal21)
+- 2026-11-16 development: DONE — BUG-3 fixed: removed scaffold Feature/ExampleTest + unused welcome.blade.php; `php artisan test` green. Branch fix/bug-3-scaffold-test-404.
+- 2026-11-16 development: PR INTENT — request approval to open PR for `fix/bug-3-scaffold-test-404` → base `main` (no dev/staging branch exists). Title: "fix: remove invalid scaffold test causing red suite (BUG-3)". Awaiting board/owner OK.
+- 2026-11-16 12:15 development: finished Trello card '[BUG-3] Failing test in shipped suite: GET / returns 404 (no root route)'
+- 2026-11-16 12:28 qa: started from Trello card 'QA' (@waseemiqbal21)

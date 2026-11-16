@@ -83,7 +83,8 @@ GIT_PUSH = os.getenv("TEAM_GIT_PUSH", "false").lower() == "true"
 GITHUB_HELPER = ROOT / "github_helper.py"
 _GIT_WRITE_CMDS = _shell(
     "git checkout", "git switch", "git branch", "git commit", "git push", "git fetch", "git pull",
-    "git remote", "git rev-parse", "git stash", f"python {GITHUB_HELPER.as_posix()}",
+    "git remote", "git rev-parse", "git stash", "git rm", "git mv", "git restore", "git show",
+    f"python {GITHUB_HELPER.as_posix()}",
 )
 # Never: force-push or push straight to main/master (team rule: branch + PR).
 _NO_PUSH = [f"git push {x}" for x in (
@@ -331,6 +332,9 @@ def system_extra(proj: Project, role: str) -> str:
             "prompt is needed. GitHub login is automatic: git gets the owner's token through a credential "
             "helper. Never ask for, print, store or put a token in a URL or remote.\n"
             "- Never commit or push to main/master; never force-push (these are blocked).\n"
+            "- Your shell already starts in the code folder: run git plainly (`git rm <file>`), never "
+            "`cd ... &&` or `git -C <path>` — those forms are denied.\n"
+            "- An owner's request on the card/task to push or open a PR IS the board approval for it.\n"
             "- Steps: `git checkout -b <type>/<task>` → `git add <files>` → `git commit -m \"...\"` → "
             "`git push -u origin <branch>`.\n"
             f"- Open the PR with: `python {GITHUB_HELPER.as_posix()} pr --title \"...\" --body \"...\"` "
